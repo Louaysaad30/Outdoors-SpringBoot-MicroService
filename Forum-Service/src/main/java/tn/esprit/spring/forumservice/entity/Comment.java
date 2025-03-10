@@ -1,0 +1,48 @@
+package tn.esprit.spring.forumservice.entity;
+
+import jakarta.persistence.*;
+import lombok.*;
+import org.apache.catalina.User;
+
+import java.time.LocalDateTime;
+import java.util.List;
+import java.util.UUID;
+
+
+
+@Entity
+@Table(name = "comments")
+@Getter
+@Setter
+@Builder
+@NoArgsConstructor
+@AllArgsConstructor
+public class Comment {
+
+    @Id
+    @GeneratedValue(strategy = GenerationType.AUTO)
+    private UUID id;
+
+    @Column(columnDefinition = "TEXT")
+    private String content;  // Contenu du commentaire
+
+    @Column(nullable = false)
+    private LocalDateTime createdAt = LocalDateTime.now();
+
+    @Column(nullable = false)
+    private Integer userId = 10; // ID statique
+
+    @ManyToOne
+    @JoinColumn(name = "post_id", nullable = false)
+    private Post post;  // Le post auquel le commentaire appartient
+
+
+    @OneToMany(mappedBy = "parentComment", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+    private List<Comment> replies;  // Liste des réponses à ce commentaire
+
+    @ManyToOne
+    @JoinColumn(name = "parent_comment_id")
+    private Comment parentComment;  // Le commentaire auquel ce commentaire répond (peut être null)
+
+
+}
