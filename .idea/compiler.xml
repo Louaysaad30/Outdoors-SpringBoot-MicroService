@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="CompilerConfiguration">
+    <annotationProcessing>
+      <profile default="true" name="Default" enabled="true" />
+      <profile name="Maven default annotation processors profile" enabled="true">
+        <sourceOutputDir name="target/generated-sources/annotations" />
+        <sourceTestOutputDir name="target/generated-test-sources/test-annotations" />
+        <outputRelativeToContentRoot value="true" />
+        <module name="MarketPlace-Service" />
+        <module name="Transport-Service" />
+        <module name="Eureka-Server" />
+        <module name="Event-Service" />
+        <module name="Forum-Service" />
+        <module name="User-Service" />
+      </profile>
+      <profile name="Annotation profile for Formation-Service" enabled="true">
+        <sourceOutputDir name="target/generated-sources/annotations" />
+        <sourceTestOutputDir name="target/generated-test-sources/test-annotations" />
+        <outputRelativeToContentRoot value="true" />
+        <processorPath useClasspath="false">
+          <entry name="$MAVEN_REPOSITORY$/org/projectlombok/lombok/unknown/lombok-unknown.jar" />
+        </processorPath>
+        <module name="Formation-Service" />
+        <module name="Camping-Service" />
+      </profile>
+    </annotationProcessing>
+  </component>
+  <component name="JavacSettings">
+    <option name="ADDITIONAL_OPTIONS_OVERRIDE">
+      <module name="Camping-Service" options="-parameters" />
+      <module name="Eureka-Server" options="-parameters" />
+      <module name="Event-Service" options="" />
+      <module name="Formation-Service" options="-parameters" />
+      <module name="Forum-Service" options="" />
+      <module name="MarketPlace-Service" options="" />
+      <module name="Transport-Service" options="" />
+      <module name="User-Service" options="" />
+    </option>
+  </component>
+</project>
