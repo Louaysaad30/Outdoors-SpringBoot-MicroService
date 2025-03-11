@@ -1,5 +1,6 @@
 package tn.esprit.spring.forumservice.entity;
 
+import com.fasterxml.jackson.annotation.JsonManagedReference;
 import jakarta.persistence.*;
 import lombok.*;
 
@@ -38,6 +39,7 @@ public class Post {
     @Transient
     private String email = "test_user@example.com";
 
+    @JsonManagedReference
     @OneToMany(mappedBy = "post", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
     private List<Media> media;  // Liste des médias attachés au post (images, vidéos)
 

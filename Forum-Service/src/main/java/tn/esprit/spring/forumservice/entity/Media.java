@@ -1,5 +1,6 @@
 package tn.esprit.spring.forumservice.entity;
 
+import com.fasterxml.jackson.annotation.JsonBackReference;
 import jakarta.persistence.*;
 import lombok.*;
 
@@ -35,7 +36,7 @@ public class Media {
     @Column(nullable = false)
     private MediaType mediaType;// Type du média (IMAGE ou VIDEO)
 
-
+    @JsonBackReference
     @ManyToOne
     @JoinColumn(name = "post_id", nullable = false)
     private Post post;  // Chaque média est associé à un seul post
