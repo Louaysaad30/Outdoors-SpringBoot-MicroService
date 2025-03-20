@@ -1,5 +1,6 @@
 package tn.esprit.spring.eventservice.entity;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.persistence.*;
@@ -40,7 +41,7 @@ public class EventArea {
     private String areaImg;
 
     @OneToMany(mappedBy = "eventArea")
-    @JsonIgnoreProperties("eventArea")
+    @JsonIgnore
     @Schema(description = "List of events hosted at this venue")
     private List<Event> events;
 }
