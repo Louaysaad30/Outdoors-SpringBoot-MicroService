@@ -104,24 +104,49 @@
             }
 
             // Update
-            @Operation(summary = "Update event area", description = "Updates an existing event venue's details")
+            @Operation(summary = "Update event area with image", description = "Updates an existing event venue's details with image upload support")
             @ApiResponses(value = {
-                @ApiResponse(responseCode = "200", description = "Event area updated successfully"),
-                @ApiResponse(responseCode = "404", description = "Event area not found", content = @Content),
-                @ApiResponse(responseCode = "400", description = "Invalid input data", content = @Content)
+                    @ApiResponse(responseCode = "200", description = "Event area updated successfully"),
+                    @ApiResponse(responseCode = "404", description = "Event area not found", content = @Content),
+                    @ApiResponse(responseCode = "400", description = "Invalid input data or image upload failed", content = @Content)
             })
-            @PutMapping("/{id}")
+            @PutMapping(value = "/{id}/update", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
             public ResponseEntity<EventArea> updateEventArea(
                     @Parameter(description = "ID of the event area to update", required = true)
                     @PathVariable Long id,
-                    @Parameter(description = "Updated event area details", required = true)
-                    @RequestBody EventArea eventArea) {
-                if (!eventAreaService.getEventAreaById(id).isPresent()) {
-                    return new ResponseEntity<>(HttpStatus.NOT_FOUND);
-                }
-                eventArea.setId(id);
-                return new ResponseEntity<>(eventAreaService.updateEventArea(eventArea), HttpStatus.OK);
+                    @RequestPart(value = "image", required = false) MultipartFile image,
+                    @RequestParam(value = "name", required = true) String name,
+                    @RequestParam(value = "capacity", required = true) Integer capacity,
+                    @RequestParam(value = "latitude", required = true) Double latitude,
+                    @RequestParam(value = "longitude", required = true) Double longitude,
+                    @RequestParam(value = "description", required = true) String description) {
+
+                return eventAreaService.getEventAreaById(id)
+                        .map(existingArea -> {
+                            try {
+                                // Update basic information
+                                existingArea.setName(name);
+                                existingArea.setCapacity(capacity);
+                                existingArea.setLatitude(latitude);
+                                existingArea.setLongitude(longitude);
+                                existingArea.setDescription(description);
+
+                                // Update image only if a new one is provided
+                                if (image != null && !image.isEmpty()) {
+                                    String imageUrl = cloudinaryService.uploadImage(image);
+                                    existingArea.setAreaImg(imageUrl);
+                                }
+
+                                // Save the updated event area
+                                EventArea updatedArea = eventAreaService.updateEventArea(existingArea);
+                                return new ResponseEntity<EventArea>(updatedArea, HttpStatus.OK);
+                            } catch (IOException e) {
+                                return new ResponseEntity<EventArea>(HttpStatus.BAD_REQUEST);
+                            }
+                        })
+                        .orElse(new ResponseEntity<EventArea>(HttpStatus.NOT_FOUND));
             }
+
 
             // Delete
             @Operation(summary = "Delete event area", description = "Removes an event venue from the system")

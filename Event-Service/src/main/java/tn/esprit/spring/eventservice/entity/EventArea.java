@@ -35,6 +35,7 @@ public class EventArea {
     private Double longitude;
 
     @Schema(description = "Detailed description of the venue")
+    @Column(length = 1000)
     private String description;
 
     @Schema(description = "URL or path to the image of the area")
