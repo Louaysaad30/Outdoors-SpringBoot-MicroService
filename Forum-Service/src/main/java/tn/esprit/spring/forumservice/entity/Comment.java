@@ -1,5 +1,6 @@
 package tn.esprit.spring.forumservice.entity;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import lombok.*;
 import org.apache.catalina.User;
@@ -30,8 +31,9 @@ public class Comment {
     private LocalDateTime createdAt = LocalDateTime.now();
 
     @Column(nullable = false)
-    private Integer userId = 10; // ID statique
+    private Integer userId ; // ID statique
 
+    @JsonIgnore
     @ManyToOne
     @JoinColumn(name = "post_id", nullable = false)
     private Post post;  // Le post auquel le commentaire appartient
