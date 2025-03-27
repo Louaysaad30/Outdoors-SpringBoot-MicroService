@@ -1,5 +1,6 @@
 package tn.esprit.spring.campingservice.Entity;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import lombok.*;
 import lombok.experimental.FieldDefaults;
@@ -18,18 +19,23 @@ public class CentreCamping {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     Long idCentre;
 
-    String address;
+    String latitude;
+    String longitude; ;
+
     String name;
     int capcite;
     @Lob
     String image;
 
+    @JsonIgnore
     @OneToMany(mappedBy = "centre", cascade = CascadeType.ALL)
     private List<Logement> logements;
 
+    @JsonIgnore
     @OneToMany(mappedBy = "centre", cascade = CascadeType.ALL)
     private List<Materiel> materiels;
 
+    @JsonIgnore
     @OneToMany(mappedBy = "centre", cascade = CascadeType.ALL)
     private List<Reservation> reservations;
 
