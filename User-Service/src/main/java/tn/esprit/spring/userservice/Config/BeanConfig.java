@@ -1,5 +1,6 @@
 package tn.esprit.spring.userservice.Config;
 
+import lombok.AllArgsConstructor;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Configurable;
 import org.springframework.context.annotation.Bean;
@@ -8,18 +9,15 @@ import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.AuthenticationProvider;
 import org.springframework.security.authentication.dao.DaoAuthenticationProvider;
 import org.springframework.security.config.annotation.authentication.configuration.AuthenticationConfiguration;
-import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
-import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
-import tn.esprit.spring.userservice.Repository.UserRepository;
-import tn.esprit.spring.userservice.Security.UserDetailsServiceImpl;
+
 
 
 
 @Configuration
-@RequiredArgsConstructor
+@AllArgsConstructor
 public class BeanConfig {
     private final UserDetailsService userDetailsService;
 

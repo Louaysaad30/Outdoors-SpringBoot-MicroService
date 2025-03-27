@@ -1,5 +1,6 @@
-package tn.esprit.spring.userservice.Security;
+package tn.esprit.spring.userservice.Service.IMPL;
 
+import lombok.AllArgsConstructor;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
@@ -8,8 +9,8 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import tn.esprit.spring.userservice.Repository.UserRepository;
 
-// @Service
-@RequiredArgsConstructor
+@Service
+@AllArgsConstructor
 public class UserDetailsServiceImpl implements UserDetailsService {
     private UserRepository repository;
     @Override

@@ -1,9 +1,13 @@
 package tn.esprit.spring.userservice.Enum;
 
 public enum RoleType {
+    USER,
     ADMIN,
     OWNER,
     FORMATEUR,
-    VISITEUR
+    EVENT_MANAGER,
+    AGENCE,
+
+
 
 }

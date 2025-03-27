@@ -1,5 +1,6 @@
 package tn.esprit.spring.userservice.Entity;
 
+import jakarta.annotation.Resource;
 import jakarta.persistence.*;
 import lombok.*;
 import lombok.experimental.FieldDefaults;
@@ -10,6 +11,7 @@ import java.util.List;
 @Entity
 @Getter
 @Setter
+@Builder
 @AllArgsConstructor
 @NoArgsConstructor
 @FieldDefaults(level = AccessLevel.PRIVATE)
@@ -21,4 +23,6 @@ public class Role {
     private RoleType roleType;
     @ManyToMany(mappedBy = "roles")
     private List<User> users;
+
+
 }

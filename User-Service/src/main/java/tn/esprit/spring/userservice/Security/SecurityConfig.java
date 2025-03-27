@@ -1,6 +1,7 @@
 package tn.esprit.spring.userservice.Security;
 
 
+import lombok.AllArgsConstructor;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -11,19 +12,17 @@ import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
 import org.springframework.security.config.http.SessionCreationPolicy;
-
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 
 
 @Configuration
     @EnableWebSecurity
-    @RequiredArgsConstructor
+    @AllArgsConstructor
     @EnableGlobalMethodSecurity(securedEnabled = true)
     public class SecurityConfig {
         private final AuthenticationProvider authenticationProvider;
-        private JwtFilter JwtAuthFilter;
-
+        private final JwtFilter jwtAuthFilter;
 
         @Bean
         public SecurityFilterChain filterChain(HttpSecurity httpSecurity) throws Exception {
@@ -45,18 +44,9 @@ import org.springframework.security.web.authentication.UsernamePasswordAuthentic
                             .permitAll()
                             .anyRequest()
                             .authenticated())
-
                     .sessionManagement(sess -> sess.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
-                    .oauth2Login(oauth2 -> oauth2
-                            .loginPage("/auth/login")
-                            .defaultSuccessUrl("/User")
-                            .failureUrl("/auth/login?error=true")
-                            .permitAll()
-                    )
-                    .oauth2ResourceServer(oauth2 -> oauth2
-                            .jwt(Customizer.withDefaults())
-                    ).authenticationProvider(authenticationProvider)
-                    .addFilterBefore(JwtAuthFilter, UsernamePasswordAuthenticationFilter.class)
+                    .authenticationProvider(authenticationProvider)
+                    .addFilterBefore(jwtAuthFilter, UsernamePasswordAuthenticationFilter.class)
                     .build();
         }
 
