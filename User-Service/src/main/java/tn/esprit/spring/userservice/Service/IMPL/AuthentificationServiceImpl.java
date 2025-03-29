@@ -1,9 +1,11 @@
 package tn.esprit.spring.userservice.Service.IMPL;
 
 import jakarta.mail.MessagingException;
-import lombok.AllArgsConstructor;
+import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import tn.esprit.spring.userservice.Entity.Token;
@@ -13,12 +15,16 @@ import tn.esprit.spring.userservice.Enum.RoleType;
 import tn.esprit.spring.userservice.Repository.RoleRepository;
 import tn.esprit.spring.userservice.Repository.TokenRepository;
 import tn.esprit.spring.userservice.Repository.UserRepository;
+import tn.esprit.spring.userservice.Security.JwtService;
 import tn.esprit.spring.userservice.Service.Interface.AuthenticationService;
 import tn.esprit.spring.userservice.Service.Interface.EmailService;
+import tn.esprit.spring.userservice.dto.Request.AuthenticationRequest;
 import tn.esprit.spring.userservice.dto.Request.RegistrationRequest;
+import tn.esprit.spring.userservice.dto.Response.AuthenticationResponse;
 
 import java.security.SecureRandom;
 import java.time.LocalDateTime;
+import java.util.HashMap;
 import java.util.List;
 
 @Service
@@ -28,8 +34,10 @@ public class AuthentificationServiceImpl implements AuthenticationService {
     private final RoleRepository roleRepository;
     private final PasswordEncoder bCryptPasswordEncoder;
     private  final UserRepository userRepository;
+    private final AuthenticationManager authenticationManager;
     private  final TokenRepository tokenRepository;
     private final EmailService emailService;
+    private final JwtService jwtService;
     @Value("${application.mailing.frontend.activation-url:http://localhost:4200/activate-account}")
     private String activationUrl;
 
@@ -52,6 +60,42 @@ public class AuthentificationServiceImpl implements AuthenticationService {
         userRepository.save(user);
         sendValidationEmail(user);
 
+    }
+
+    @Override
+    public AuthenticationResponse authenticate(AuthenticationRequest request) {
+        var auth = authenticationManager.authenticate(
+                new UsernamePasswordAuthenticationToken(
+                        request.getEmail(),
+                        request.getMotDePasse()
+                )
+        );
+
+        var claims = new HashMap<String, Object>();
+        var user = ((User) auth.getPrincipal());
+        claims.put("fullName", user.fullName());
+
+        var jwtToken = jwtService.generateToken(claims, (User) auth.getPrincipal());
+        return AuthenticationResponse.builder()
+                .token(jwtToken)
+                .build();
+    }
+
+    @Override
+    //@Transactional
+    public void activateAccount(String token) throws MessagingException {
+        Token savedToken =tokenRepository.findByToken(token)
+                .orElseThrow(()->new RuntimeException("invalid token"));
+        if(LocalDateTime.now().isAfter(savedToken.getExpiresAt())){
+            sendValidationEmail(savedToken.getUser());
+            throw new RuntimeException("activation token has expired a new token has been send to same email addresse");
+        }
+        User user= userRepository.findById(savedToken.getUser().getId())
+                .orElseThrow(()->new RuntimeException("user not found"));
+        user.setEnabled(true);
+        userRepository.save(user);
+        savedToken.setValidatedAt(LocalDateTime.now());
+        tokenRepository.save(savedToken);
     }
 
     private void sendValidationEmail(User user) throws MessagingException {
