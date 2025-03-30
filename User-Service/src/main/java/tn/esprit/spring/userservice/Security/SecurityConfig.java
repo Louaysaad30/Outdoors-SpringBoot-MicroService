@@ -30,17 +30,23 @@ import org.springframework.security.web.authentication.UsernamePasswordAuthentic
                     .cors(Customizer.withDefaults())
                     .csrf(AbstractHttpConfigurer::disable)
                     .authorizeHttpRequests(auth-> auth.requestMatchers(
+
                                     "/swagger-ui/**",
                                     "/swagger-ui.html",
-                                    "/v2/api-docs/**",
+                                    "/v2/api-docs",
+                                    "/v3/api-docs",
                                     "/v3/api-docs/**",
+                                    "/swagger-resources",
                                     "/swagger-resources/**",
                                     "/webjars/**",
+                                    "/configuration/ui",
+                                    "/configuration/security",
                                     "/auth/**",
                                     "/user/**",
                                     "/model-stt/**",
                                     "/applications/**",
-                                    "/notifications/**")
+                                    "/notifications/**"
+                            )
                             .permitAll()
                             .anyRequest()
                             .authenticated())
