@@ -1,4 +1,3 @@
-// File: Event-Service/src/main/java/tn/esprit/spring/eventservice/controller/EventAreaController.java
         package tn.esprit.spring.eventservice.controller;
 
         import io.swagger.v3.oas.annotations.Operation;

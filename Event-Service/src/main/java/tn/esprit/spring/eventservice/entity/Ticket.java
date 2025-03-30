@@ -1,5 +1,6 @@
 package tn.esprit.spring.eventservice.entity;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import lombok.*;
 import tn.esprit.spring.eventservice.entity.TicketType;
@@ -29,6 +30,7 @@ public class Ticket {
     private String discountCode;
 
     @ManyToOne
+    @JsonIgnore
     private Event event;
 
     @OneToMany(mappedBy = "ticket", cascade = CascadeType.ALL)

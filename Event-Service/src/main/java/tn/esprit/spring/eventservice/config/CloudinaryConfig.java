@@ -13,7 +13,7 @@ public class CloudinaryConfig {
     @Bean
     public Cloudinary cloudinary() {
         Map<String, String> config = ObjectUtils.asMap(
- );
+
         return new Cloudinary(config);
     }
 }

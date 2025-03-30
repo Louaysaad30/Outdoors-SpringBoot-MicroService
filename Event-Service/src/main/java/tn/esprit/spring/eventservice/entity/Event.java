@@ -1,5 +1,6 @@
 package tn.esprit.spring.eventservice.entity;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import jakarta.persistence.*;
 import lombok.*;
@@ -15,6 +16,7 @@ import java.util.List;
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
+
 public class Event {
 
     @Id
@@ -35,7 +37,6 @@ public class Event {
     private String imageUrl;
 
     @ManyToOne
-    @JsonIgnoreProperties("events")
     //@JoinColumn(name = "event_area_id")
     private EventArea eventArea;
 
