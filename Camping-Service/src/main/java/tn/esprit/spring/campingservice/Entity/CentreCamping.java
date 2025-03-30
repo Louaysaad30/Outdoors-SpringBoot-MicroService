@@ -21,6 +21,7 @@ public class CentreCamping {
 
     String latitude;
     String longitude; ;
+    String address;
 
     String name;
     int capcite;
