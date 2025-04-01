@@ -13,14 +13,15 @@ import java.util.List;
 
 @Service
 public class DemandeLocationService implements IDemandeLocationService {
-    private final DemandeLocationRepository demandeLocationRepository;
 
-    public DemandeLocationService(DemandeLocationRepository demandeLocationRepository) {
-        this.demandeLocationRepository = demandeLocationRepository;
-    }
+    private final DemandeLocationRepository demandeLocationRepository;
+    private final VehiculeRepository vehiculeRepository;
 
     @Autowired
-    private VehiculeRepository vehiculeRepository;
+    public DemandeLocationService(DemandeLocationRepository demandeLocationRepository, VehiculeRepository vehiculeRepository) {
+        this.demandeLocationRepository = demandeLocationRepository;
+        this.vehiculeRepository = vehiculeRepository;
+    }
 
     @Override
     public List<DemandeLocation> findAll() {
@@ -33,30 +34,39 @@ public class DemandeLocationService implements IDemandeLocationService {
     }
 
     @Override
-    public DemandeLocation save(DemandeLocation demande) {
-        // Ensure Vehicule is properly loaded from the DB
-        Vehicule vehicule = vehiculeRepository.findById(demande.getVehicule().getId())
+    public DemandeLocation save(DemandeLocation demandeLocation) {
+
+        if (demandeLocation.getVehicule() == null) {
+            throw new RuntimeException("Véhicule ne peut pas être nul");
+        }
+        Vehicule vehicule = vehiculeRepository.findById(demandeLocation.getVehicule().getId())
                 .orElseThrow(() -> new RuntimeException("Véhicule non trouvé"));
 
-        // Ensure the vehicule's fields are populated (check its data)
-        if (vehicule.getType() == null || vehicule.getModele() == null) {
-            throw new RuntimeException("Véhicule incomplet");
-        }
+        // Ensure the end date is after the start date
+        long nbJours = ChronoUnit.DAYS.between(demandeLocation.getDebutLocation(), demandeLocation.getFinLocation());
+        double prixTotal = nbJours * vehicule.getPrixParJour();
+        demandeLocation.setPrixTotal(prixTotal);
 
-        // Calcul du nombre de nuits
-        long nbJours = ChronoUnit.DAYS.between(demande.getDebutLocation(), demande.getFinLocation());
+        demandeLocation.setVehicule(vehicule);
+        return demandeLocationRepository.save(demandeLocation);
+    }
+
+
+    @Override
+    public DemandeLocation update(Long id, DemandeLocation demandeLocationDetails) {
+        DemandeLocation existingDemande = demandeLocationRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Demande non trouvée"));
+        existingDemande.setVehicule(demandeLocationDetails.getVehicule());
+        existingDemande.setDebutLocation(demandeLocationDetails.getDebutLocation());
+        existingDemande.setFinLocation(demandeLocationDetails.getFinLocation());
+        existingDemande.setStatut(demandeLocationDetails.getStatut());
+        long nbJours = ChronoUnit.DAYS.between(existingDemande.getDebutLocation(), existingDemande.getFinLocation());
         if (nbJours <= 0) {
             throw new RuntimeException("La date de fin doit être après la date de début");
         }
-
-        //Calcul du prix total
-        double prixTotal = nbJours * vehicule.getPrixParJour();
-        demande.setPrixTotal(prixTotal);
-
-        // Ensure that the vehicule is fully set in the demande
-        demande.setVehicule(vehicule);
-
-        return demandeLocationRepository.save(demande);
+        double prixTotal = nbJours * existingDemande.getVehicule().getPrixParJour();
+        existingDemande.setPrixTotal(prixTotal);
+        return demandeLocationRepository.save(existingDemande);
     }
 
     @Override

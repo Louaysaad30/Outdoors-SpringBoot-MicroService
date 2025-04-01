@@ -2,6 +2,7 @@ package tn.esprit.spring.transportservice.entity;
 
 import jakarta.persistence.*;
 import lombok.*;
+import lombok.experimental.FieldDefaults;
 import tn.esprit.spring.transportservice.enums.TypeVehicule;
 import tn.esprit.spring.transportservice.enums.StatutVehicule;
 
@@ -10,6 +11,9 @@ import tn.esprit.spring.transportservice.enums.StatutVehicule;
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
+@Getter
+@Setter
+@FieldDefaults(level = AccessLevel.PRIVATE)
 public class Vehicule {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -27,6 +31,14 @@ public class Vehicule {
     private String localisation;
     private Double prixParJour;
     private Integer nbPlace;
+
+    @Column(nullable = true)
+    private Double rating;
+
+    @Lob
+    @Column(nullable = true)
+    private String image;
+
 
     @ManyToOne
     @JoinColumn(name = "agence_id")

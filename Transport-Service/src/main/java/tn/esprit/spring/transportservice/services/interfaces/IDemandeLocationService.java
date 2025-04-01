@@ -8,5 +8,8 @@ public interface IDemandeLocationService {
     List<DemandeLocation> findAll();
     DemandeLocation findById(Long id);
     DemandeLocation save(DemandeLocation demandeLocation);
+
+    DemandeLocation update(Long id, DemandeLocation demandeLocationDetails);
+
     void deleteById(Long id);
 }

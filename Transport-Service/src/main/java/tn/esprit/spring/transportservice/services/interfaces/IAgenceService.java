@@ -11,5 +11,7 @@ public interface IAgenceService {
 
     Agence save(Agence agence);
 
+    Agence update(Long id, Agence agenceDetails);
+
     void deleteById(Long id);
 }

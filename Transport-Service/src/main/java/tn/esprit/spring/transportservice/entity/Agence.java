@@ -1,7 +1,10 @@
 package tn.esprit.spring.transportservice.entity;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import lombok.*;
+import lombok.experimental.FieldDefaults;
+
 import java.util.Set;
 
 @Entity
@@ -9,6 +12,10 @@ import java.util.Set;
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
+@Getter
+@Setter
+@FieldDefaults(level = AccessLevel.PRIVATE)
+
 public class Agence {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -19,6 +26,7 @@ public class Agence {
     private String numero;
     private String adresse;
 
-    @OneToMany(mappedBy = "agence", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+    @JsonIgnore
+    @OneToMany(mappedBy = "agence", cascade = CascadeType.ALL)
     private Set<Vehicule> vehicules;
 }

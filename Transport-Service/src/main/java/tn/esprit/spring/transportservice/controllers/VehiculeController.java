@@ -5,18 +5,20 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import tn.esprit.spring.transportservice.entity.Vehicule;
 import tn.esprit.spring.transportservice.services.IMPL.VehiculeService;
+import tn.esprit.spring.transportservice.services.interfaces.IVehiculeService;
 
 import java.util.List;
 import java.util.Optional;
 
 @RestController
 @RequestMapping("/api/vehicules")
+@CrossOrigin(origins = "http://localhost:4200")
 public class VehiculeController {
 
-    private final VehiculeService vehiculeService;
+    private final IVehiculeService vehiculeService;
 
     @Autowired
-    public VehiculeController(VehiculeService vehiculeService) {
+    public VehiculeController(IVehiculeService vehiculeService) {
         this.vehiculeService = vehiculeService;
     }
 
@@ -36,24 +38,9 @@ public class VehiculeController {
     }
 
     @PutMapping("/{id}")
-    public ResponseEntity<Vehicule> updateVehicule(@PathVariable Long id, @RequestBody Vehicule vehiculeDetails) {
-        Optional<Vehicule> optionalVehicule = Optional.ofNullable(vehiculeService.findById(id));
-        if (optionalVehicule.isPresent()) {
-            Vehicule vehicule = optionalVehicule.get();
-            vehicule.setType(vehiculeDetails.getType());
-            vehicule.setModele(vehiculeDetails.getModele());
-            vehicule.setLocalisation(vehiculeDetails.getLocalisation());
-            vehicule.setDisponible(vehiculeDetails.isDisponible());
-            vehicule.setStatut(vehiculeDetails.getStatut());
-            vehicule.setPrixParJour(vehiculeDetails.getPrixParJour());
-            vehicule.setNbPlace(vehiculeDetails.getNbPlace());
-            Vehicule updatedVehicule = vehiculeService.save(vehicule);
-            return ResponseEntity.ok(updatedVehicule);
-        } else {
-            return ResponseEntity.notFound().build();
-        }
+    public Vehicule updateVehicule(@PathVariable Long id, @RequestBody Vehicule updatedVehicule) {
+        return vehiculeService.update(id, updatedVehicule);
     }
-
 
     @DeleteMapping("/{id}")
     public void deleteVehicule(@PathVariable Long id) {

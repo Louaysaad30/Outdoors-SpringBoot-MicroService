@@ -7,12 +7,11 @@ import org.springframework.web.bind.annotation.*;
 import tn.esprit.spring.transportservice.entity.DemandeLocation;
 import tn.esprit.spring.transportservice.services.IMPL.DemandeLocationService;
 
-import java.time.LocalDateTime;
 import java.util.List;
-import java.util.Optional;
 
 @RestController
 @RequestMapping("/api/demandes")
+@CrossOrigin(origins = "http://localhost:4200")
 public class DemandeLocationController {
 
     private final DemandeLocationService demandeLocationService;
@@ -22,52 +21,43 @@ public class DemandeLocationController {
         this.demandeLocationService = demandeLocationService;
     }
 
+    // Get all demandes
     @GetMapping
     public List<DemandeLocation> getAllDemandes() {
         return demandeLocationService.findAll();
     }
 
+    // Get demande by ID
     @GetMapping("/{id}")
     public ResponseEntity<DemandeLocation> getDemandeById(@PathVariable Long id) {
-        Optional<DemandeLocation> demandeLocation = Optional.ofNullable(demandeLocationService.findById(id));
-        return demandeLocation.map(ResponseEntity::ok)
-                .orElseGet(() -> ResponseEntity.notFound().build());
+        DemandeLocation demandeLocation = demandeLocationService.findById(id);
+        return demandeLocation != null ? ResponseEntity.ok(demandeLocation) : ResponseEntity.notFound().build();
     }
 
+    // Create new demande
     @PostMapping
     public ResponseEntity<DemandeLocation> createDemande(@RequestBody DemandeLocation demandeLocation) {
-        demandeLocation.setDebutLocation(demandeLocation.getDebutLocation());
-        demandeLocation.setFinLocation(demandeLocation.getFinLocation());
-        demandeLocation.setPrixTotal(demandeLocation.getPrixTotal());
-        demandeLocation.setStatut(DemandeLocation.StatutDemande.EN_ATTENTE);
         DemandeLocation savedDemande = demandeLocationService.save(demandeLocation);
         return ResponseEntity.status(HttpStatus.CREATED).body(savedDemande);
     }
 
+
     @PutMapping("/{id}")
-    public ResponseEntity<DemandeLocation> updateDemande(@PathVariable Long id, @RequestBody DemandeLocation demandeDetails) {
-        Optional<DemandeLocation> existingDemande = Optional.ofNullable(demandeLocationService.findById(id));
-        if (existingDemande.isPresent()) {
-            DemandeLocation demandeToUpdate = existingDemande.get();
-            demandeToUpdate.setVehicule(demandeDetails.getVehicule());
-            demandeToUpdate.setDebutLocation(demandeDetails.getDebutLocation());
-            demandeToUpdate.setFinLocation(demandeDetails.getFinLocation());
-            demandeToUpdate.setPrixTotal(demandeDetails.getPrixTotal());
-            demandeToUpdate.setStatut(demandeDetails.getStatut());
-            DemandeLocation updatedDemande = demandeLocationService.save(demandeToUpdate);
+    public ResponseEntity<DemandeLocation> updateDemande(@PathVariable Long id, @RequestBody DemandeLocation demandeLocationDetails) {
+        try {
+            DemandeLocation updatedDemande = demandeLocationService.update(id, demandeLocationDetails);
             return ResponseEntity.ok(updatedDemande);
-        } else {
-            return ResponseEntity.notFound().build();
+        } catch (RuntimeException ex) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(null);
         }
     }
 
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> deleteDemande(@PathVariable Long id) {
-        Optional<DemandeLocation> existingDemande = Optional.ofNullable(demandeLocationService.findById(id));
-        if (existingDemande.isPresent()) {
+        try {
             demandeLocationService.deleteById(id);
             return ResponseEntity.noContent().build();
-        } else {
+        } catch (RuntimeException ex) {
             return ResponseEntity.notFound().build();
         }
     }

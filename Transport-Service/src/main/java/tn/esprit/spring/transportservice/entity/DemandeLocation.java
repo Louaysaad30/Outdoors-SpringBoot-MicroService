@@ -2,8 +2,11 @@ package tn.esprit.spring.transportservice.entity;
 
 
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import lombok.*;
+import lombok.experimental.FieldDefaults;
+
 import java.time.LocalDateTime;
 
 @Entity
@@ -11,10 +14,16 @@ import java.time.LocalDateTime;
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
+@Getter
+@Setter
+@FieldDefaults(level = AccessLevel.PRIVATE)
+
 public class DemandeLocation {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
+
+
     @ManyToOne
     @JoinColumn(name = "vehicule_id")
     private Vehicule vehicule;
