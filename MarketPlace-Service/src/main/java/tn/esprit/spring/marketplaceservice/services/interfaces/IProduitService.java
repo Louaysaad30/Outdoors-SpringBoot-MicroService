@@ -14,4 +14,5 @@ public interface IProduitService {
     Produit desaffecterProduitCategorie(long idProduit);
     Produit affecterProduitCode(long idProduit, long idCode);
     Produit desaffecterProduitCode(long idProduit);
+    List<Produit> getProduitsByCode(Long code);
 }

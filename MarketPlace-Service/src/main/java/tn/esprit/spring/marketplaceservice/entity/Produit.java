@@ -29,7 +29,7 @@ public class Produit {
     @JsonIgnore
     @ManyToOne
     CodeProduit codeProduit;
-    @JsonIgnore
+
     @ManyToOne
     PCategorie categorie;
 

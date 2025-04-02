@@ -8,6 +8,8 @@ import tn.esprit.spring.marketplaceservice.entity.CodeProduit;
 import tn.esprit.spring.marketplaceservice.repository.CodeProduitRepository;
 import tn.esprit.spring.marketplaceservice.services.interfaces.ICodeProduitService;
 
+import java.util.List;
+
 @AllArgsConstructor
 @Service
 public class CodeProduitServiceIMPL implements ICodeProduitService {
@@ -32,5 +34,10 @@ public class CodeProduitServiceIMPL implements ICodeProduitService {
     @Override
     public CodeProduit updateCodeProduit(CodeProduit codeProduit) {
         return codeProduitRepository.save(codeProduit);
+    }
+
+    @Override
+    public List<CodeProduit> retrieveCodeProduits() {
+        return codeProduitRepository.findAll();
     }
 }

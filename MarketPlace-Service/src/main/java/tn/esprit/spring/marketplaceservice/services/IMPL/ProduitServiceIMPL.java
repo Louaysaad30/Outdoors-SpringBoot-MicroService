@@ -1,5 +1,6 @@
 package tn.esprit.spring.marketplaceservice.services.IMPL;
 
+import jakarta.transaction.Transactional;
 import lombok.AllArgsConstructor;
 import org.springframework.stereotype.Service;
 import tn.esprit.spring.marketplaceservice.entity.CodeProduit;
@@ -69,7 +70,15 @@ public class ProduitServiceIMPL implements IProduitService {
 
     @Override
     public Produit desaffecterProduitCode(long idProduit) {
-        return null;
+        Produit produit = produitRepository.findById(idProduit).orElse(null);
+        produit.setCodeProduit(null);
+        return produitRepository.save(produit);
+    }
+
+    @Transactional
+    @Override
+    public List<Produit> getProduitsByCode(Long code) {
+        return produitRepository.findByCodeProduitIdCodeProduit(code);
     }
 
 
