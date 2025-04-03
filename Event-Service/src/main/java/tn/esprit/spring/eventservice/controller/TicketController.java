@@ -14,6 +14,7 @@ import tn.esprit.spring.eventservice.services.IMPL.TicketServiceImpl;
 
 import java.util.List;
 
+@CrossOrigin(origins = "*")
 @RestController
 @RequestMapping("/api/tickets")
 @AllArgsConstructor

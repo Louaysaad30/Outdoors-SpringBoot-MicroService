@@ -1,6 +1,6 @@
 package tn.esprit.spring.eventservice.entity;
 
-import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.*;
 import jakarta.persistence.*;
 import lombok.*;
 import tn.esprit.spring.eventservice.entity.TicketType;
@@ -19,6 +19,7 @@ public class Ticket {
     private Long id;
 
     @Enumerated(EnumType.STRING)
+    @Column(length = 20)
     private TicketType type;
 
     private Double price;
@@ -30,7 +31,9 @@ public class Ticket {
     private String discountCode;
 
     @ManyToOne
-    @JsonIgnore
+    //@JsonIdentityInfo(generator = ObjectIdGenerators.PropertyGenerator.class, property = "id")
+    //@JsonIdentityReference(alwaysAsId = true)
+    //@JsonBackReference
     private Event event;
 
     @OneToMany(mappedBy = "ticket", cascade = CascadeType.ALL)

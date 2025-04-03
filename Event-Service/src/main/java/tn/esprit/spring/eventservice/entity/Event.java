@@ -2,6 +2,7 @@ package tn.esprit.spring.eventservice.entity;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+import com.fasterxml.jackson.annotation.JsonManagedReference;
 import jakarta.persistence.*;
 import lombok.*;
 import tn.esprit.spring.eventservice.entity.Status;
@@ -41,5 +42,7 @@ public class Event {
     private EventArea eventArea;
 
     @OneToMany(mappedBy = "event", cascade = CascadeType.ALL)
+   // @JsonManagedReference
+    @JsonIgnore
     private List<Ticket> tickets;
 }
