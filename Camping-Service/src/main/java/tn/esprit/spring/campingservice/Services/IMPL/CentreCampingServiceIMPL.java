@@ -71,4 +71,25 @@ public class CentreCampingServiceIMPL implements ICentreCampingService {
         }
     }
 
+    @Override
+    public List<CentreCamping> retrieveVerifiedCentreCamping() {
+        return centreCampingRepository.findVerifiedCentreCamping();
+    }
+
+    @Override
+    public List<CentreCamping> retrieveCentreCampingByOwner(Long idOwner) {
+        return centreCampingRepository.findByIdOwner(idOwner);
+    }
+
+    @Override
+    public CentreCamping verifyCentreCamping(Long idCentre) {
+        CentreCamping centreCamping = centreCampingRepository.findById(idCentre).orElse(null);
+        if (centreCamping != null) {
+            centreCamping.setVerified(true);
+            return centreCampingRepository.save(centreCamping);
+        } else {
+            return null;
+        }
+    }
+
 }

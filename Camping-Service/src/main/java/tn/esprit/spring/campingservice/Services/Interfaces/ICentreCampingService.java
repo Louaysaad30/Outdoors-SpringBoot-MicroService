@@ -12,4 +12,8 @@ public interface ICentreCampingService {
     CentreCamping retrieveCentreCamping(Long idCentre);
     void removeCentreCamping(Long idCentre);
     String uploadFile(MultipartFile file);
+    List<CentreCamping> retrieveVerifiedCentreCamping();
+    List<CentreCamping> retrieveCentreCampingByOwner(Long idOwner);
+    CentreCamping verifyCentreCamping(Long idCentre);
+
 }

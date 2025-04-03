@@ -61,4 +61,19 @@ public class CentreCampingController {
 
         return ResponseEntity.ok(responseBody);
     }
+
+    @PutMapping("/verify/{id}")
+    public CentreCamping verifyCentreCamping(@PathVariable Long id) {
+        return centreCampingService.verifyCentreCamping(id);
+    }
+
+    @GetMapping("/my/{idOwner}")
+    public List<CentreCamping> getCentreCampingByOwner(@PathVariable Long idOwner) {
+        return centreCampingService.retrieveCentreCampingByOwner(idOwner);
+    }
+
+    @GetMapping("/verified")
+    public List<CentreCamping> getVerifiedCentreCamping() {
+        return centreCampingService.retrieveVerifiedCentreCamping();
+    }
 }

@@ -28,6 +28,10 @@ public class CentreCamping {
     @Lob
     String image;
 
+    Long idOwner;
+    float prixJr;
+    boolean isVerified;
+
     @JsonIgnore
     @OneToMany(mappedBy = "centre", cascade = CascadeType.ALL)
     private List<Logement> logements;
