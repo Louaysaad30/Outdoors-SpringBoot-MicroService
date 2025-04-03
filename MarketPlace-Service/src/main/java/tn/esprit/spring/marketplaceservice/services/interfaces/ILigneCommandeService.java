@@ -10,4 +10,8 @@ public interface ILigneCommandeService {
     LigneCommande updateLigneCommande(LigneCommande ligneCommande);
     LigneCommande retrieveLigneCommande(long idLigneCommande);
     void removeLigneCommande(long idLigneCommande);
+    List<LigneCommande> getLigneCommandesByPanierId(Long panierId);
+    List<LigneCommande> findByPanierId(Long panierId);
+
+
 }

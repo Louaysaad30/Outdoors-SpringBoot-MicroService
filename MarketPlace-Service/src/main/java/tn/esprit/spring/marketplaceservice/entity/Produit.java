@@ -37,4 +37,10 @@ public class Produit {
     @OneToMany(mappedBy = "produit")
     List<LigneCommande> ligneCommandes;
 
+    @Override
+    public String toString() {
+        return "Produit{id=" + idProduit + ", nom=" + nomProduit + ", description=" + descriptionProduit + ", prix=" + prixProduit + "}";
+    }
+
+
 }

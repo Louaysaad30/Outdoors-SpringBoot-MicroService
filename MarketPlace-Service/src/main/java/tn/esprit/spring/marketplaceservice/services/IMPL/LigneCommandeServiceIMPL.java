@@ -35,7 +35,21 @@ public class LigneCommandeServiceIMPL implements ILigneCommandeService {
     }
 
     @Override
+    public List<LigneCommande> getLigneCommandesByPanierId(Long panierId) {
+        return ligneCommandeRepository.findAll().stream()
+                .filter(ligneCommande -> ligneCommande.getPanier().getId().equals(panierId))
+                .toList();
+    }
+
+    @Override
     public LigneCommande updateLigneCommande(LigneCommande ligneCommande) {
         return ligneCommandeRepository.save(ligneCommande);
+    }
+
+    @Override
+    public List<LigneCommande> findByPanierId(Long panierId) {
+        return ligneCommandeRepository.findAll().stream()
+                .filter(ligneCommande -> ligneCommande.getPanier().getId().equals(panierId))
+                .toList();
     }
 }

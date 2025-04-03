@@ -35,5 +35,10 @@ public class LigneCommande {
         @ManyToOne
         Panier panier;
 
+        @Override
+        public String toString() {
+                return "LigneCommande{id=" + idLigneCommande + ", produit=" + produit + ", quantite=" + quantite + ", prix=" + prix + "}";
+        }
+
 
 }

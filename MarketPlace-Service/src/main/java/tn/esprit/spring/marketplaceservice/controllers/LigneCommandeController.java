@@ -39,4 +39,12 @@ public class LigneCommandeController {
     public void removeLigneCommande(@PathVariable long idLigneCommande) {
         iLigneCommandeService.removeLigneCommande(idLigneCommande);
     }
+
+    // In your LigneCommandeController
+    @GetMapping("/getByPanier/{panierId}")
+    public List<LigneCommande> getLigneCommandesByPanierId(@PathVariable Long panierId) {
+        List<LigneCommande> lignes = iLigneCommandeService.findByPanierId(panierId);
+        System.out.println("Sending lignes: " + lignes); // Debug line
+        return lignes;
+    }
 }

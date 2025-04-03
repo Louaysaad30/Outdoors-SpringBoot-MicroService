@@ -63,14 +63,25 @@ public class PanierServiceIMPL implements IPanierService {
 
         Produit produit = produitRepository.findById(produitId).orElseThrow(() -> new RuntimeException("Produit non trouvé"));
 
-        LigneCommande ligneCommande = new LigneCommande();
-        ligneCommande.setPanier(panier);
-        ligneCommande.setProduit(produit);
-        ligneCommande.setQuantite(quantite);
-        ligneCommande.setPrix(produit.getPrixProduit() * quantite);
+        // Vérifier si le produit existe déjà dans la ligne de commande
+        LigneCommande ligneCommande = ligneCommandeRepository.findByPanierAndProduit(panier, produit);
 
-        ligneCommandeRepository.save(ligneCommande);
+        if (ligneCommande != null) {
+            // Si le produit existe, incrémenter la quantité et mettre à jour le prix
+            ligneCommande.setQuantite(ligneCommande.getQuantite() + quantite);
+            ligneCommande.setPrix(produit.getPrixProduit() * ligneCommande.getQuantite());
+            ligneCommandeRepository.save(ligneCommande);
+        } else {
+            // Si le produit n'existe pas, créer une nouvelle ligne de commande
+            ligneCommande = new LigneCommande();
+            ligneCommande.setPanier(panier);
+            ligneCommande.setProduit(produit);
+            ligneCommande.setQuantite(quantite);
+            ligneCommande.setPrix(produit.getPrixProduit() * quantite);
+            ligneCommandeRepository.save(ligneCommande);
+        }
 
+        // Mettre à jour le total du panier
         panier.setTotal(panier.getTotal() + ligneCommande.getPrix());
         panierRepository.save(panier);
 
