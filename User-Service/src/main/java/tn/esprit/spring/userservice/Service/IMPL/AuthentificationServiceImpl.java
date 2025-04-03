@@ -4,10 +4,13 @@ import jakarta.mail.MessagingException;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.dao.DataIntegrityViolationException;
+import org.springframework.http.HttpStatus;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+import org.springframework.web.server.ResponseStatusException;
 import tn.esprit.spring.userservice.Entity.Token;
 import tn.esprit.spring.userservice.Entity.User;
 import tn.esprit.spring.userservice.Enum.EmailTemplateName;
@@ -44,9 +47,14 @@ public class AuthentificationServiceImpl implements AuthenticationService {
 
     @Override
     public void register(RegistrationRequest request) throws MessagingException {
-        var userRole=roleRepository.findByRoleType(RoleType.USER)
-                .orElseThrow(()->new IllegalArgumentException("Role user is not initialize"));
-        User user=new User();
+        if (userRepository.findByEmail(request.getEmail()).isPresent()) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Email '" + request.getEmail() + "' is already in use.");
+        }
+
+        var userRole = roleRepository.findByRoleType(RoleType.USER)
+                .orElseThrow(() -> new IllegalArgumentException("Role user is not initialized"));
+
+        User user = new User();
         user.setNom(request.getNom());
         user.setPrenom(request.getPrenom());
         user.setDateNaissance(request.getDateNaissance());
@@ -57,9 +65,9 @@ public class AuthentificationServiceImpl implements AuthenticationService {
         user.setAccountLocked(false);
         user.setEnabled(false);
         user.setRoles(List.of(userRole));
+
         userRepository.save(user);
         sendValidationEmail(user);
-
     }
 
     @Override
