@@ -8,6 +8,7 @@ import tn.esprit.spring.transportservice.repository.DemandeLocationRepository;
 import tn.esprit.spring.transportservice.repository.VehiculeRepository;
 import tn.esprit.spring.transportservice.services.interfaces.IDemandeLocationService;
 
+import java.time.LocalDateTime;
 import java.time.temporal.ChronoUnit;
 import java.util.List;
 
@@ -39,35 +40,56 @@ public class DemandeLocationService implements IDemandeLocationService {
         if (demandeLocation.getVehicule() == null) {
             throw new RuntimeException("Véhicule ne peut pas être nul");
         }
+
         Vehicule vehicule = vehiculeRepository.findById(demandeLocation.getVehicule().getId())
                 .orElseThrow(() -> new RuntimeException("Véhicule non trouvé"));
 
-        // Ensure the end date is after the start date
         long nbJours = ChronoUnit.DAYS.between(demandeLocation.getDebutLocation(), demandeLocation.getFinLocation());
+        if (nbJours <= 0) {
+            throw new RuntimeException("La date de fin doit être après la date de début");
+        }
+
         double prixTotal = nbJours * vehicule.getPrixParJour();
         demandeLocation.setPrixTotal(prixTotal);
-
         demandeLocation.setVehicule(vehicule);
+
         return demandeLocationRepository.save(demandeLocation);
     }
-
 
     @Override
     public DemandeLocation update(Long id, DemandeLocation demandeLocationDetails) {
         DemandeLocation existingDemande = demandeLocationRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Demande non trouvée"));
+
+        existingDemande.setFullName(demandeLocationDetails.getFullName());
+        existingDemande.setPhone(demandeLocationDetails.getPhone());
         existingDemande.setVehicule(demandeLocationDetails.getVehicule());
         existingDemande.setDebutLocation(demandeLocationDetails.getDebutLocation());
         existingDemande.setFinLocation(demandeLocationDetails.getFinLocation());
+        existingDemande.setPickupLocation(demandeLocationDetails.getPickupLocation());
+
+        existingDemande.setPickupLatitude(demandeLocationDetails.getPickupLatitude());
+        existingDemande.setPickupLongitude(demandeLocationDetails.getPickupLongitude());
+
         existingDemande.setStatut(demandeLocationDetails.getStatut());
+
         long nbJours = ChronoUnit.DAYS.between(existingDemande.getDebutLocation(), existingDemande.getFinLocation());
         if (nbJours <= 0) {
             throw new RuntimeException("La date de fin doit être après la date de début");
         }
+
         double prixTotal = nbJours * existingDemande.getVehicule().getPrixParJour();
         existingDemande.setPrixTotal(prixTotal);
+
         return demandeLocationRepository.save(existingDemande);
     }
+
+//    public boolean isVehicleAvailable(Long vehiculeId, LocalDateTime startDate, LocalDateTime endDate) {
+//        List<DemandeLocation> existingReservations = demandeLocationRepository.findByVehiculeIdAndDateRange(vehiculeId, startDate, endDate);
+//        return existingReservations.isEmpty();
+//    }
+
+
 
     @Override
     public void deleteById(Long id) {

@@ -7,6 +7,7 @@ import org.springframework.web.bind.annotation.*;
 import tn.esprit.spring.transportservice.entity.DemandeLocation;
 import tn.esprit.spring.transportservice.services.IMPL.DemandeLocationService;
 
+import java.time.LocalDateTime;
 import java.util.List;
 
 @RestController
@@ -61,4 +62,17 @@ public class DemandeLocationController {
             return ResponseEntity.notFound().build();
         }
     }
+
+//    @GetMapping("/check-availability")
+//    public ResponseEntity<Boolean> checkAvailability(@RequestParam Long vehicleId,
+//                                                     @RequestParam String startDate,
+//                                                     @RequestParam String endDate) {
+//        // Convert startDate and endDate to LocalDate or LocalDateTime
+//        LocalDateTime start = LocalDateTime.parse(startDate);
+//        LocalDateTime end = LocalDateTime.parse(endDate);
+//
+//        boolean isAvailable = demandeLocationService.isVehicleAvailable(vehicleId, start, end);
+//        return ResponseEntity.ok(isAvailable);
+//    }
+
 }
