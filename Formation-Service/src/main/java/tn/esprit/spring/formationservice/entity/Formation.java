@@ -3,6 +3,7 @@ package tn.esprit.spring.formationservice.entity;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import jakarta.persistence.*;
 import lombok.*;
+
 import java.time.LocalDateTime;
 import java.util.List;
 
@@ -27,23 +28,34 @@ public class Formation {
 
     private Double prix;
 
-    private boolean publie;
+    private boolean enLigne; // true = en ligne, false = présentiel
+
+    private String lieu; // si enLigne == false
+
+    private String meetLink; // si enLigne == true
+
+    private LocalDateTime dateDebut;
+    private LocalDateTime dateFin;
 
     private LocalDateTime datePublication;
 
     private Long formateurId;
 
-    private Long evenementId; // (optionnel, venant de Event-Service)
+    private Long evenementId; // future use
+
+    private String titrePause; // pause optionnelle
+    private Integer dureePauseMinutes; // en minutes
+    private Boolean besoinSponsor; // pour la pause
 
     @ManyToOne
     @JsonIgnoreProperties("formations")
     private Categorie categorie;
 
-    @OneToMany(mappedBy = "formation", cascade = CascadeType.ALL)
-    @JsonIgnoreProperties("formation")
-    private List<Reservation> reservations;
+    @ManyToOne
+    @JsonIgnoreProperties("formations")
+    private Sponsor sponsor;
 
     @OneToMany(mappedBy = "formation", cascade = CascadeType.ALL)
     @JsonIgnoreProperties("formation")
-    private List<Pause> pauses;
+    private List<Reservation> reservations;
 }

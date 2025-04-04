@@ -31,5 +31,5 @@ public class Sponsor {
 
     @OneToMany(mappedBy = "sponsor", cascade = CascadeType.ALL)
     @JsonIgnoreProperties("sponsor")
-    private List<Pause> pauses;
+    private List<Formation> formations;
 }
