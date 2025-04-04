@@ -39,7 +39,6 @@ public class Vehicule {
     @Column(nullable = true)
     private String image;
 
-
     @ManyToOne
     @JoinColumn(name = "agence_id")
     private Agence agence;

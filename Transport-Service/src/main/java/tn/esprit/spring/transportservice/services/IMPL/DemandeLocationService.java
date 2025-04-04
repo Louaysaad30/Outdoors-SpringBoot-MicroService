@@ -29,6 +29,10 @@ public class DemandeLocationService implements IDemandeLocationService {
         return demandeLocationRepository.findAll();
     }
 
+    public List<DemandeLocation> getDemandesByUserId(Long userId) {
+        return demandeLocationRepository.findByUserId(userId);
+    }
+
     @Override
     public DemandeLocation findById(Long id) {
         return demandeLocationRepository.findById(id).orElse(null);
@@ -83,11 +87,6 @@ public class DemandeLocationService implements IDemandeLocationService {
 
         return demandeLocationRepository.save(existingDemande);
     }
-
-//    public boolean isVehicleAvailable(Long vehiculeId, LocalDateTime startDate, LocalDateTime endDate) {
-//        List<DemandeLocation> existingReservations = demandeLocationRepository.findByVehiculeIdAndDateRange(vehiculeId, startDate, endDate);
-//        return existingReservations.isEmpty();
-//    }
 
 
 

@@ -6,8 +6,6 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import tn.esprit.spring.transportservice.entity.DemandeLocation;
 import tn.esprit.spring.transportservice.services.IMPL.DemandeLocationService;
-
-import java.time.LocalDateTime;
 import java.util.List;
 
 @RestController
@@ -26,6 +24,13 @@ public class DemandeLocationController {
     @GetMapping
     public List<DemandeLocation> getAllDemandes() {
         return demandeLocationService.findAll();
+    }
+
+    //Get by id user
+    @GetMapping("/by-user/{userId}")
+    public ResponseEntity<List<DemandeLocation>> getDemandesByUserId(@PathVariable Long userId) {
+        List<DemandeLocation> demandes = demandeLocationService.getDemandesByUserId(userId);
+        return ResponseEntity.ok(demandes);
     }
 
     // Get demande by ID
