@@ -12,7 +12,10 @@ package tn.esprit.spring.eventservice.controller;
         import org.springframework.http.ResponseEntity;
         import org.springframework.web.bind.annotation.*;
         import tn.esprit.spring.eventservice.entity.Event;
+        import tn.esprit.spring.eventservice.entity.EventArea;
+        import tn.esprit.spring.eventservice.services.IMPL.EventAreaServiceImpl;
         import tn.esprit.spring.eventservice.services.IMPL.EventServiceImpl;
+        import tn.esprit.spring.eventservice.services.interfaces.IEventAreaService;
         import tn.esprit.spring.eventservice.services.interfaces.IHuggingFaceService;
 
         import java.util.Arrays;
@@ -31,6 +34,7 @@ package tn.esprit.spring.eventservice.controller;
 
             private final EventServiceImpl eventService;
             private final IHuggingFaceService huggingFaceService;
+            private final IEventAreaService eventAreaService;
 
 /*
             @PostMapping("/{eventId}/improve-description")
@@ -54,7 +58,7 @@ package tn.esprit.spring.eventservice.controller;
                 }
             }
 */
-
+            //EXTRACT FROM EVENT
             @PostMapping("/{eventId}/extract-keywords")
             public ResponseEntity<Event> extractKeywords(
                     @Parameter(description = "ID of the event", required = true) @PathVariable Long eventId) {
@@ -76,6 +80,60 @@ package tn.esprit.spring.eventservice.controller;
                 }
             }
 
+            //EXTRACT FROM EVENT AREA
+            @PostMapping("/{eventId}/extract-area-keywords")
+            public ResponseEntity<EventArea> extractAreaKeywords(
+                    @Parameter(description = "ID of the event", required = true) @PathVariable Long eventId) {
+
+                Optional<Event> eventOpt = eventService.getEventById(eventId);
+                if (eventOpt.isEmpty()) {
+                    return new ResponseEntity<>(HttpStatus.NOT_FOUND);
+                }
+
+                Event event = eventOpt.get();
+                if (event.getEventArea() == null) {
+                    return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
+                }
+
+                EventArea eventArea = event.getEventArea();
+                try {
+                    String[] keywords = huggingFaceService.extractKeywords(eventArea.getDescription());
+                    eventArea.setKeywords(new HashSet<>(Arrays.asList(keywords)));
+
+                    // Save the updated event area
+                    EventArea savedEventArea = eventAreaService.updateEventArea(eventArea);
+                    return ResponseEntity.ok(savedEventArea);
+                } catch (Exception e) {
+                    log.error("Error extracting keywords from event area description: {}", e.getMessage());
+                    return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
+                }
+            }
+
+            //EXTRACT FROM EVENT AREA ID
+            @PostMapping("/event-area/{eventAreaId}/extract-keywords")
+            public ResponseEntity<EventArea> extractEventAreaKeywords(
+                    @Parameter(description = "ID of the event area", required = true) @PathVariable Long eventAreaId) {
+
+                Optional<EventArea> eventAreaOpt = eventAreaService.getEventAreaById(eventAreaId);
+                if (eventAreaOpt.isEmpty()) {
+                    return new ResponseEntity<>(HttpStatus.NOT_FOUND);
+                }
+
+                EventArea eventArea = eventAreaOpt.get();
+                try {
+                    String[] keywords = huggingFaceService.extractKeywords(eventArea.getDescription());
+                    eventArea.setKeywords(new HashSet<>(Arrays.asList(keywords)));
+
+                    // Save the updated event area
+                    EventArea savedEventArea = eventAreaService.updateEventArea(eventArea);
+                    return ResponseEntity.ok(savedEventArea);
+                } catch (Exception e) {
+                    log.error("Error extracting keywords from event area description: {}", e.getMessage());
+                    return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
+                }
+            }
+
+            //PREVIEW IMPROVEMENT
             @Operation(summary = "Preview text improvements", description = "Shows improved text without saving to database")
             @PostMapping("/preview-improvement")
             public ResponseEntity<Map<String, String>> previewImprovement(
@@ -96,4 +154,6 @@ package tn.esprit.spring.eventservice.controller;
                     return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
                 }
             }
+
+
         }

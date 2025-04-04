@@ -6,7 +6,9 @@ import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.persistence.*;
 import lombok.*;
 
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 @Entity
 @Getter
@@ -35,7 +37,7 @@ public class EventArea {
     private Double longitude;
 
     @Schema(description = "Detailed description of the venue")
-    @Column(length = 1000)
+    @Column(columnDefinition = "TEXT")
     private String description;
 
     @Schema(description = "URL or path to the image of the area")
@@ -45,4 +47,7 @@ public class EventArea {
     @JsonIgnore
     @Schema(description = "List of events hosted at this venue")
     private List<Event> events;
+
+    @ElementCollection
+    private Set<String> keywords = new HashSet<>();
 }

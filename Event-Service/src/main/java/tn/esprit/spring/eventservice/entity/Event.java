@@ -28,6 +28,7 @@ public class Event {
 
     private String title;
 
+    @Column(columnDefinition = "TEXT")
     private String description;
 
     private LocalDateTime startDate;
