@@ -1,6 +1,7 @@
 package tn.esprit.spring.userservice.Controller;
 
 import jakarta.mail.MessagingException;
+import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
 
 import lombok.RequiredArgsConstructor;
@@ -19,6 +20,7 @@ import java.util.Map;
 
 @RestController
 @RequestMapping("/auth")
+@CrossOrigin(origins = "http://localhost:4200")
 @RequiredArgsConstructor
 public class AuthController {
     @Qualifier("authentificationServiceImpl")
@@ -37,12 +39,29 @@ public class AuthController {
 
 
     @PostMapping("/authenticate")
-    public ResponseEntity<AuthenticationResponse> authenticate(@RequestBody @Valid AuthenticationRequest request) {
-        return ResponseEntity.ok(service.authenticate(request));
+    public ResponseEntity<?> authenticate(@RequestBody @Valid AuthenticationRequest request) {
+        try {
+            AuthenticationResponse response = service.authenticate(request);
+            return ResponseEntity.ok(response); // Return the JWT token if authentication is successful
+        } catch (ResponseStatusException ex) {
+            // Handle different exception cases for more fine-grained error responses
+            return ResponseEntity.status(ex.getStatusCode())
+                    .body(Map.of("status", ex.getStatusCode().value(), "message", ex.getReason()));
+        } catch (RuntimeException e) {
+            // For unexpected errors, you can return a generic error message
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(Collections.singletonMap("error", e.getMessage()));
+        }
     }
+
+
     @GetMapping("/activate-account")
     public void confirm(@RequestParam String token) throws MessagingException {
         service.activateAccount(token);
+    }
+    @PostMapping("/logout")
+    public ResponseEntity<?> logout(HttpServletRequest request) {
+        // No real logic needed with JWT, just return OK
+        return ResponseEntity.ok("User logged out successfully.");
     }
 
 }

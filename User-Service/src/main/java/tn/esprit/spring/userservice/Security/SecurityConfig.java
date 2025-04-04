@@ -27,10 +27,8 @@ import org.springframework.security.web.authentication.UsernamePasswordAuthentic
         @Bean
         public SecurityFilterChain filterChain(HttpSecurity httpSecurity) throws Exception {
             return httpSecurity
-                    .cors(Customizer.withDefaults())
-                    .csrf(AbstractHttpConfigurer::disable)
+                    .csrf(csrf -> csrf.disable())
                     .authorizeHttpRequests(auth-> auth.requestMatchers(
-
                                     "/swagger-ui/**",
                                     "/swagger-ui.html",
                                     "/v2/api-docs",

@@ -6,8 +6,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.http.HttpStatus;
-import org.springframework.security.authentication.AuthenticationManager;
-import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.authentication.*;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.web.server.ResponseStatusException;
@@ -72,22 +71,35 @@ public class AuthentificationServiceImpl implements AuthenticationService {
 
     @Override
     public AuthenticationResponse authenticate(AuthenticationRequest request) {
-        var auth = authenticationManager.authenticate(
-                new UsernamePasswordAuthenticationToken(
-                        request.getEmail(),
-                        request.getMotDePasse()
-                )
-        );
+        // Check if the email exists in the database
+        var user = userRepository.findByEmail(request.getEmail())
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.BAD_REQUEST, "Invalid email or password"));
 
+        // Check if the account is locked
+        if (user.isAccountLocked()) {
+            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Account is locked");
+        }
+
+        // Check if the account is enabled (activated)
+        if (!user.isEnabled()) {
+            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Account is not activated. Please check your email.");
+        }
+
+        // Check if the password matches
+        if (!bCryptPasswordEncoder.matches(request.getMotDePasse(), user.getMotDePasse())) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Invalid email or password");
+        }
+
+        // Generate JWT token if authentication passes
         var claims = new HashMap<String, Object>();
-        var user = ((User) auth.getPrincipal());
         claims.put("fullName", user.fullName());
 
-        var jwtToken = jwtService.generateToken(claims, (User) auth.getPrincipal());
+        var jwtToken = jwtService.generateToken(claims, user);
         return AuthenticationResponse.builder()
                 .token(jwtToken)
                 .build();
     }
+
 
     @Override
     //@Transactional
