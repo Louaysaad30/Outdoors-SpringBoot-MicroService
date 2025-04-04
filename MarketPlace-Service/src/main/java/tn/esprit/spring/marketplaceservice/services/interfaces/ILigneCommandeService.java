@@ -1,5 +1,6 @@
 package tn.esprit.spring.marketplaceservice.services.interfaces;
 
+import tn.esprit.spring.marketplaceservice.DTO.UpdateQuantiteDTO;
 import tn.esprit.spring.marketplaceservice.entity.LigneCommande;
 
 import java.util.List;
@@ -12,6 +13,8 @@ public interface ILigneCommandeService {
     void removeLigneCommande(long idLigneCommande);
     List<LigneCommande> getLigneCommandesByPanierId(Long panierId);
     List<LigneCommande> findByPanierId(Long panierId);
+    LigneCommande updateQuantite(Long idLigneCommande, UpdateQuantiteDTO dto);
+
 
 
 }

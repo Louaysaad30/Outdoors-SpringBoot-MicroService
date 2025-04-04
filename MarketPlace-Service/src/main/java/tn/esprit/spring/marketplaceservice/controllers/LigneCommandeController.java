@@ -2,7 +2,9 @@ package tn.esprit.spring.marketplaceservice.controllers;
 
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.AllArgsConstructor;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import tn.esprit.spring.marketplaceservice.DTO.UpdateQuantiteDTO;
 import tn.esprit.spring.marketplaceservice.entity.LigneCommande;
 import tn.esprit.spring.marketplaceservice.services.interfaces.ILigneCommandeService;
 
@@ -46,5 +48,15 @@ public class LigneCommandeController {
         List<LigneCommande> lignes = iLigneCommandeService.findByPanierId(panierId);
         System.out.println("Sending lignes: " + lignes); // Debug line
         return lignes;
+    }
+
+    @PutMapping("/updateQuantite/{id}")
+    public ResponseEntity<LigneCommande> updateQuantite(@PathVariable("id") Long id, @RequestBody UpdateQuantiteDTO dto) {
+        try {
+            LigneCommande updated = iLigneCommandeService.updateQuantite(id, dto);
+            return ResponseEntity.ok(updated);
+        } catch (RuntimeException e) {
+            return ResponseEntity.notFound().build();
+        }
     }
 }
