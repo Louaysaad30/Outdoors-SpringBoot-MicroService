@@ -8,7 +8,9 @@ import lombok.*;
 import tn.esprit.spring.eventservice.entity.Status;
 
 import java.time.LocalDateTime;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 
 @Entity
@@ -45,4 +47,10 @@ public class Event {
    // @JsonManagedReference
     @JsonIgnore
     private List<Ticket> tickets;
+
+    @ElementCollection
+    private Set<String> keywords = new HashSet<>();
+
+/*    @Column(length = 2000)
+    private String enhancedDescription;*/
 }
