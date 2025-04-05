@@ -9,6 +9,7 @@ package tn.esprit.spring.eventservice.controller;
         import org.slf4j.Logger;
         import org.slf4j.LoggerFactory;
         import org.springframework.http.HttpStatus;
+        import org.springframework.http.MediaType;
         import org.springframework.http.ResponseEntity;
         import org.springframework.web.bind.annotation.*;
         import tn.esprit.spring.eventservice.entity.Event;
@@ -153,7 +154,44 @@ package tn.esprit.spring.eventservice.controller;
                 } catch (Exception e) {
                     return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
                 }
+
+
+
             }
 
+
+            @Operation(summary = "Generate image from text", description = "Creates an image based on the provided text description")
+            @ApiResponses(value = {
+                @ApiResponse(responseCode = "200", description = "Image generated successfully"),
+                @ApiResponse(responseCode = "400", description = "Invalid input"),
+                @ApiResponse(responseCode = "500", description = "Failed to generate image")
+            })
+            @PostMapping("/generate-image")
+            public ResponseEntity<byte[]> generateImageFromText(
+                    @Parameter(description = "Text description to generate image from", required = true)
+                    @RequestBody Map<String, String> request) {
+
+                String text = request.get("text");
+                if (text == null || text.trim().isEmpty()) {
+                    return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
+                }
+
+                try {
+                    log.info("Generating image from text: {}", text);
+                    byte[] imageBytes = huggingFaceService.generateImage(text);
+
+                    if (imageBytes != null && imageBytes.length > 0) {
+                        return ResponseEntity.ok()
+                            .contentType(MediaType.IMAGE_PNG)
+                            .body(imageBytes);
+                    } else {
+                        log.warn("Failed to generate image - no bytes returned");
+                        return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
+                    }
+                } catch (Exception e) {
+                    log.error("Error generating image: {}", e.getMessage());
+                    return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
+                }
+            }
 
         }
