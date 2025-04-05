@@ -75,6 +75,7 @@ package tn.esprit.spring.eventservice.services.IMPL;
                     }
                     */
 
+
                     @Override
                     public String[] extractKeywords(String text) {
                         lastCallUsedFallback = false;
@@ -82,73 +83,85 @@ package tn.esprit.spring.eventservice.services.IMPL;
                             return new String[0];
                         }
 
-                        try {
-                            Map<String, Object> requestBody = Map.of("inputs", text);
+                        // List of models to try in order
+                        List<String> models = Arrays.asList(
+                            "yanekyuk/bert-uncased-keyword-extractor",
+                            "ml6team/keyphrase-extraction-kbir-inspec",
+                            "explosion/spacy-ner-bert-large"
+                        );
 
-                            log.info("Calling HuggingFace API to extract keywords");
-                            String response = webClient.post()
-                                    .uri("/dslim/bert-base-NER")
-                                    .bodyValue(requestBody)
-                                    .retrieve()
-                                    .bodyToMono(String.class)
-                                    .timeout(Duration.ofSeconds(10))
-                                    .block();
+                        for (String model : models) {
+                            // Try each model with retries
+                            for (int attempt = 0; attempt < 3; attempt++) {
+                                try {
+                                    // Add exponential backoff between retries
+                                    if (attempt > 0) {
+                                        Thread.sleep(1000 * (1 << (attempt - 1))); // 1s, 2s, 4s
+                                    }
 
-                            if (response != null) {
-                                log.debug("Raw API response: {}", response);
-                                JsonNode jsonNode = objectMapper.readTree(response);
-                                Set<String> uniqueEntities = new HashSet<>();
+                                    Map<String, Object> requestBody = Map.of("inputs", text);
 
-                                if (jsonNode.isArray()) {
-                                    // Process first-level array
-                                    for (JsonNode entry : jsonNode) {
-                                        if (entry.isArray()) {
-                                            // Process nested arrays (BERT-NER format)
-                                            for (JsonNode item : entry) {
-                                                if (item.has("entity_group") && item.has("word")) {
-                                                    String entityGroup = item.get("entity_group").asText();
-                                                    String word = item.get("word").asText().replaceAll("##", "");
+                                    log.info("Calling HuggingFace API model {} (attempt {}/3)", model, attempt + 1);
+                                    String response = webClient.post()
+                                            .uri("/" + model)
+                                            .bodyValue(requestBody)
+                                            .retrieve()
+                                            .bodyToMono(String.class)
+                                            .timeout(Duration.ofSeconds(30)) // Increased timeout
+                                            .block();
 
-                                                    // Only collect meaningful named entities
-                                                    if (word.length() > 1 && !word.matches("\\W+")) {
-                                                        uniqueEntities.add(word);
-                                                        log.debug("Found entity: {} of type {}", word, entityGroup);
+                                    if (response != null) {
+                                        log.info("Success! Got response from model {}", model);
+                                        JsonNode jsonNode = objectMapper.readTree(response);
+                                        Set<String> uniqueKeywords = new HashSet<>();
+
+                                        // Process based on model-specific response format
+                                        if (jsonNode.isArray()) {
+                                            if (model.contains("bert-uncased-keyword")) {
+                                                // For yanekyuk/bert-uncased-keyword-extractor
+                                                for (JsonNode item : jsonNode) {
+                                                    if (item.has("entity_group") && "KEYWORD".equals(item.get("entity_group").asText())) {
+                                                        uniqueKeywords.add(item.get("word").asText().trim());
+                                                    }
+                                                }
+                                            } else if (model.contains("keyphrase-extraction")) {
+                                                // For ml6team/keyphrase-extraction-kbir-inspec
+                                                for (JsonNode result : jsonNode) {
+                                                    if (result.has("word")) {
+                                                        uniqueKeywords.add(result.get("word").asText().trim());
+                                                    }
+                                                }
+                                            } else {
+                                                // For NER models like spacy-ner
+                                                for (JsonNode item : jsonNode) {
+                                                    if (item.has("entity") || item.has("entity_group")) {
+                                                        String keyword = item.has("word") ? item.get("word").asText() :
+                                                                        (item.has("token") ? item.get("token").asText() : "");
+                                                        if (keyword != null && !keyword.trim().isEmpty()) {
+                                                            uniqueKeywords.add(keyword.trim());
+                                                        }
                                                     }
                                                 }
                                             }
                                         }
-                                    }
-                                }
 
-                                if (!uniqueEntities.isEmpty()) {
-                                    log.info("Successfully extracted {} keywords using HuggingFace API", uniqueEntities.size());
-                                    return uniqueEntities.toArray(new String[0]);
-                                } else {
-                                    // If no entities were found through NER, extract simple keywords
-                                    log.info("No named entities found, extracting simple keywords");
-                                    String[] words = text.toLowerCase().split("\\s+");
-                                    return Arrays.stream(words)
-                                            .filter(w -> w.length() > 4)
-                                            .filter(w -> !w.matches("\\W+"))
-                                            .limit(5)
-                                            .toArray(String[]::new);
+                                        if (!uniqueKeywords.isEmpty()) {
+                                            log.info("Extracted {} keywords using model: {}", uniqueKeywords.size(), model);
+                                            return uniqueKeywords.toArray(new String[0]);
+                                        }
+                                    }
+                                } catch (Exception e) {
+                                    log.warn("Attempt {}/3 with model {} failed: {}",
+                                          attempt + 1, model, e.getMessage());
                                 }
                             }
-
-                            log.warn("Empty response from API");
-                            lastCallUsedFallback = true;
-                            return new String[0];
-                        } catch (Exception e) {
-                            lastCallUsedFallback = true;
-                            log.error("Error extracting keywords with HuggingFace API: {}", e.getMessage());
-                            return new String[0];
+                            log.warn("All attempts failed for model {}, trying next model", model);
                         }
+
+                        log.error("All keyword extraction models failed");
+                        return new String[0]; // Return empty array instead of using fallback
                     }
-                    /*
-                    private String[] extractKeywordsFallback(String text) {
-                        // Fallback implementation commented out
-                    }
-                    */
+
 
                     @Override
                     public boolean didLastCallUseFallback() {
