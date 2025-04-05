@@ -92,4 +92,15 @@ public class CentreCampingServiceIMPL implements ICentreCampingService {
         }
     }
 
+    @Override
+    public CentreCamping deactivateCentreCamping(Long idCentre) {
+        CentreCamping centreCamping = centreCampingRepository.findById(idCentre).orElse(null);
+        if (centreCamping != null) {
+            centreCamping.setVerified(false);
+            return centreCampingRepository.save(centreCamping);
+        } else {
+            return null;
+        }
+    }
+
 }

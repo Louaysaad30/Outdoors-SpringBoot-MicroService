@@ -76,4 +76,9 @@ public class CentreCampingController {
     public List<CentreCamping> getVerifiedCentreCamping() {
         return centreCampingService.retrieveVerifiedCentreCamping();
     }
+
+    @PutMapping("/deactivate/{id}")
+    public CentreCamping deactivateCentreCamping(@PathVariable Long id) {
+        return centreCampingService.deactivateCentreCamping(id);
+    }
 }
