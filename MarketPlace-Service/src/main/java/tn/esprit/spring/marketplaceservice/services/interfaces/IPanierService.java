@@ -12,4 +12,6 @@ public interface IPanierService {
     void removePanier(long idPanier);
     Panier ajouterProduitAuPanier(Long userId, Long produitId, Long quantite);
     Panier getPanierByUser(Long idUser);
+    Panier updateTotal(Long panierId, Double newTotal);
+
 }

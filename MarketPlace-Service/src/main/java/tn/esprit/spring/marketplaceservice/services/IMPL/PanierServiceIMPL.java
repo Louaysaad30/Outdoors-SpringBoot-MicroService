@@ -1,5 +1,6 @@
 package tn.esprit.spring.marketplaceservice.services.IMPL;
 
+import jakarta.transaction.Transactional;
 import lombok.AllArgsConstructor;
 import org.springframework.stereotype.Service;
 import tn.esprit.spring.marketplaceservice.entity.LigneCommande;
@@ -90,6 +91,16 @@ public class PanierServiceIMPL implements IPanierService {
     @Override
     public Panier getPanierByUser(Long idUser) {
         return panierRepository.findByUserId(idUser);
+    }
+
+    @Override
+    @Transactional
+    public Panier updateTotal(Long panierId, Double newTotal) {
+        Panier panier = panierRepository.findById(panierId)
+                .orElseThrow(() -> new RuntimeException("Panier not found with id: " + panierId));
+
+        panier.setTotal(newTotal);
+        return panierRepository.save(panier);
     }
 
 
