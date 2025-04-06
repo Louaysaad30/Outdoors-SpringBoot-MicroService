@@ -117,6 +117,17 @@ public class AuthentificationServiceImpl implements AuthenticationService {
         savedToken.setValidatedAt(LocalDateTime.now());
         tokenRepository.save(savedToken);
     }
+    @Override
+    public void resendToken(String email) throws MessagingException {
+        User user = userRepository.findByEmail(email)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "User not found with email: " + email));
+
+        if (user.isEnabled()) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Account is already activated.");
+        }
+
+        sendValidationEmail(user);
+    }
 
     private void sendValidationEmail(User user) throws MessagingException {
         var newToken=generateAndSaveActivationToken(user);

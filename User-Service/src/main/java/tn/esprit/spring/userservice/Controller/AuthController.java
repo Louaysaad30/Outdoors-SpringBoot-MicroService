@@ -10,6 +10,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.server.ResponseStatusException;
+import tn.esprit.spring.userservice.Entity.User;
 import tn.esprit.spring.userservice.Service.Interface.AuthenticationService;
 import tn.esprit.spring.userservice.dto.Request.AuthenticationRequest;
 import tn.esprit.spring.userservice.dto.Request.RegistrationRequest;
@@ -58,6 +59,21 @@ public class AuthController {
     public void confirm(@RequestParam String token) throws MessagingException {
         service.activateAccount(token);
     }
+    @PostMapping("/resend-token")
+    public ResponseEntity<?> resendActivationToken(@RequestParam String email) {
+        try {
+            service.resendToken(email);
+            return ResponseEntity.ok(Collections.singletonMap("message", "Activation email has been resent."));
+        } catch (ResponseStatusException ex) {
+            return ResponseEntity.status(ex.getStatusCode())
+                    .body(Map.of("status", ex.getStatusCode().value(), "message", ex.getReason()));
+        } catch (MessagingException e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body(Collections.singletonMap("error", "Failed to send activation email."));
+        }
+    }
+
+
     @PostMapping("/logout")
     public ResponseEntity<?> logout(HttpServletRequest request) {
         // No real logic needed with JWT, just return OK

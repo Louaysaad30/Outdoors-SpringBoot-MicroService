@@ -14,4 +14,5 @@ public interface AuthenticationService {
     public AuthenticationResponse authenticate(AuthenticationRequest request);
 
     void activateAccount(String token) throws MessagingException;
+    public void resendToken(String email) throws MessagingException;
 }
