@@ -72,6 +72,29 @@ public class AuthController {
                     .body(Collections.singletonMap("error", "Failed to send activation email."));
         }
     }
+    @PostMapping("/verify-password")
+    public ResponseEntity<?> verifyPassword(@RequestBody Map<String, Object> payload) {
+        Long userId = Long.valueOf(payload.get("userId").toString());
+        String password = payload.get("password").toString();
+
+        try {
+            boolean isPasswordCorrect = service.verifyPassword(userId, password);
+
+            if (isPasswordCorrect) {
+                // If password is correct, return a success response
+                return ResponseEntity.ok(Map.of("status", HttpStatus.OK.value(), "message", "Password is correct"));
+            } else {
+                // If password is incorrect, return a bad request response
+                return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                        .body(Map.of("status", HttpStatus.BAD_REQUEST.value(), "message", "Incorrect password"));
+            }
+        } catch (Exception e) {
+            // Handle user not found or any other unexpected error
+            return ResponseEntity.status(HttpStatus.NOT_FOUND)
+                    .body(Map.of("status", HttpStatus.NOT_FOUND.value(), "message", "User not found"));
+        }
+    }
+
 
 
     @PostMapping("/logout")

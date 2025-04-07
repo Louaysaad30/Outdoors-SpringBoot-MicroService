@@ -129,6 +129,12 @@ public class AuthentificationServiceImpl implements AuthenticationService {
         sendValidationEmail(user);
     }
 
+    @Override
+    public boolean verifyPassword(Long id, String enteredPassword) {
+        User user = userRepository.findById(id).orElse(null);
+        // Assuming you're using BCrypt or any other PasswordEncoder to compare the hashed passwords
+        return bCryptPasswordEncoder.matches(enteredPassword, user.getPassword());
+    }
     private void sendValidationEmail(User user) throws MessagingException {
         var newToken=generateAndSaveActivationToken(user);
         emailService.sendEmail(

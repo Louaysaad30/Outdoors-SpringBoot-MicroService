@@ -37,8 +37,8 @@ public class UserServiceIMPL implements UserService {
         user.setPrenom(request.getPrenom());
         user.setTel(request.getTel());
         user.setDateNaissance(request.getDateNaissance());
-        user.setStatus(request.getStatus());
-        user.setImage(request.getImage());
+       // user.setStatus(request.getStatus());
+       // user.setImage(request.getImage());
         return userRepository.save(user);
     }
 
