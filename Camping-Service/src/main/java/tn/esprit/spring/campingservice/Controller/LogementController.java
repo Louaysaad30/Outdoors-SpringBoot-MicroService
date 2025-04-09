@@ -16,7 +16,6 @@ import java.util.Map;
 @Tag(name = "Logement")
 @RestController
 @CrossOrigin("*")
-
 @AllArgsConstructor
 @RequestMapping("/Logement")
 public class LogementController {
