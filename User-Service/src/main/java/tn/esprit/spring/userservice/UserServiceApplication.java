@@ -1,15 +1,29 @@
 package tn.esprit.spring.userservice;
 
+import org.springframework.boot.CommandLineRunner;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.cloud.client.discovery.EnableDiscoveryClient;
+import org.springframework.context.annotation.Bean;
+import org.springframework.scheduling.annotation.EnableAsync;
+import tn.esprit.spring.userservice.Entity.Role;
+import tn.esprit.spring.userservice.Enum.RoleType;
+import tn.esprit.spring.userservice.Repository.RoleRepository;
 
 @EnableDiscoveryClient
 @SpringBootApplication
+@EnableAsync
 public class UserServiceApplication {
 
-    public static void main(String[] args) {
-        SpringApplication.run(UserServiceApplication.class, args);
-    }
-
+	public static void main(String[] args) {
+		SpringApplication.run(UserServiceApplication.class, args);
+	}
+	@Bean
+	public CommandLineRunner runner(RoleRepository roleRepository) {
+		return args -> {
+			if (roleRepository.findByRoleType(RoleType.USER).isEmpty()) {
+				roleRepository.save(Role.builder().roleType(RoleType.USER).build());
+			}
+		};
+	}
 }

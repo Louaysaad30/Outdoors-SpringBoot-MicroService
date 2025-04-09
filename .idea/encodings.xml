@@ -9,5 +9,6 @@
     <file url="file://$PROJECT_DIR$/MarketPlace-Service/src/main/java" charset="UTF-8" />
     <file url="file://$PROJECT_DIR$/Transport-Service/src/main/java" charset="UTF-8" />
     <file url="file://$PROJECT_DIR$/User-Service/src/main/java" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/User-Service/src/main/resources" charset="UTF-8" />
   </component>
 </project>
