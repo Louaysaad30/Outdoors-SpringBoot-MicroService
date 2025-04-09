@@ -5,13 +5,13 @@
     <option name="originalFiles">
       <list>
         <option value="$PROJECT_DIR$/User-Service/pom.xml" />
+        <option value="$PROJECT_DIR$/Eureka-Server/pom.xml" />
+        <option value="$PROJECT_DIR$/Event-Service/pom.xml" />
+        <option value="$PROJECT_DIR$/Forum-Service/pom.xml" />
+        <option value="$PROJECT_DIR$/Camping-Service/pom.xml" />
+        <option value="$PROJECT_DIR$/Formation-Service/pom.xml" />
         <option value="$PROJECT_DIR$/Transport-Service/pom.xml" />
         <option value="$PROJECT_DIR$/MarketPlace-Service/pom.xml" />
-        <option value="$PROJECT_DIR$/Forum-Service/pom.xml" />
-        <option value="$PROJECT_DIR$/Formation-Service/pom.xml" />
-        <option value="$PROJECT_DIR$/Event-Service/pom.xml" />
-        <option value="$PROJECT_DIR$/Eureka-Server/pom.xml" />
-        <option value="$PROJECT_DIR$/Camping-Service/pom.xml" />
       </list>
     </option>
   </component>
