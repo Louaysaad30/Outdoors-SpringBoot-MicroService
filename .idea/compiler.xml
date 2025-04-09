@@ -14,6 +14,20 @@
         <sourceTestOutputDir name="target/generated-test-sources/test-annotations" />
         <outputRelativeToContentRoot value="true" />
         <processorPath useClasspath="false">
+          <entry name="$MAVEN_REPOSITORY$/org/projectlombok/lombok/unknown/lombok-unknown.jar" />
+        </processorPath>
+        <module name="Formation-Service" />
+        <module name="MarketPlace-Service" />
+        <module name="Event-Service" />
+        <module name="Transport-Service" />
+        <module name="Forum-Service" />
+      </profile>
+      <profile name="Annotation profile for Camping-Service" enabled="true">
+>>>>>>> origin/main
+        <sourceOutputDir name="target/generated-sources/annotations" />
+        <sourceTestOutputDir name="target/generated-test-sources/test-annotations" />
+        <outputRelativeToContentRoot value="true" />
+        <processorPath useClasspath="false">
           <entry name="$MAVEN_REPOSITORY$/org/projectlombok/lombok/1.18.30/lombok-1.18.30.jar" />
         </processorPath>
         <module name="Event-Service" />
@@ -31,6 +45,10 @@
         <module name="Forum-Service" />
         <module name="User-Service" />
         <module name="Camping-Service" />
+=======
+        <module name="Camping-Service" />
+        <module name="User-Service" />
+>>>>>>> origin/main
       </profile>
     </annotationProcessing>
   </component>
