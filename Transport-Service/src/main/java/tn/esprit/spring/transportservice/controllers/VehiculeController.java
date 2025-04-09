@@ -28,8 +28,9 @@ public class VehiculeController {
     }
 
     @GetMapping("/{id}")
-    public Vehicule getVehiculeById(@PathVariable Long id) {
-        return vehiculeService.findById(id);
+    public ResponseEntity<Vehicule> getVehiculeById(@PathVariable Long id) {
+        Vehicule vehicule = vehiculeService.findById(id);
+        return ResponseEntity.ok(vehicule); 
     }
 
     @PostMapping

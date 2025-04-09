@@ -10,4 +10,6 @@ public interface DemandeLocationRepository extends JpaRepository<DemandeLocation
 
     List<DemandeLocation> findByUserId(Long userId);
 
+    List<DemandeLocation> findByVehiculeId(Long vehiculeId);
+
 }

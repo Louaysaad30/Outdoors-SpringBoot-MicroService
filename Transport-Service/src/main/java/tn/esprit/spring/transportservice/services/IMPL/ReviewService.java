@@ -1,36 +1,35 @@
 package tn.esprit.spring.transportservice.services.IMPL;
-
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import java.time.LocalDateTime;
 import tn.esprit.spring.transportservice.entity.Review;
+import tn.esprit.spring.transportservice.entity.Vehicule;
 import tn.esprit.spring.transportservice.repository.ReviewRepository;
-
+import tn.esprit.spring.transportservice.repository.VehiculeRepository;
 import java.util.List;
-import java.util.Optional;
+import java.util.stream.DoubleStream;
 
 @Service
 public class ReviewService {
+
     @Autowired
     private ReviewRepository reviewRepository;
 
-    public List<Review> getReviewsByVehicule(Long vehiculeId) {
-        return reviewRepository.findByVehiculeId(vehiculeId);
-    }
+    @Autowired
+    private VehiculeRepository vehiculeRepository;
 
-    public Review addReview(Review review) {
+    public Review addReview(Long vehiculeId, Review review) {
+        Vehicule vehicule = vehiculeRepository.findById(vehiculeId)
+                .orElseThrow(() -> new RuntimeException("Vehicule not found"));
+        review.setVehicule(vehicule);
+        review.setCreatedDate(LocalDateTime.now());
+
         return reviewRepository.save(review);
     }
 
-    public Review updateReview(Long id, Review updatedReview) {
-        Optional<Review> existingReview = reviewRepository.findById(id);
-        if (existingReview.isPresent()) {
-            Review review = existingReview.get();
-            review.setRating(updatedReview.getRating());
-            review.setComment(updatedReview.getComment());
-            return reviewRepository.save(review);
-        } else {
-            throw new RuntimeException("Review not found with ID: " + id);
-        }
+
+    public List<Review> getReviews(Long vehiculeId) {
+        return reviewRepository.findReviewsByVehiculeId(vehiculeId);
     }
 
     public void deleteReview(Long id) {
@@ -40,4 +39,6 @@ public class ReviewService {
             throw new RuntimeException("Review not found with ID: " + id);
         }
     }
+
 }
+
