@@ -1,4 +1,6 @@
 package tn.esprit.spring.transportservice.entity;
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonManagedReference;
 import jakarta.persistence.*;
 import lombok.*;
 import lombok.experimental.FieldDefaults;
@@ -36,7 +38,7 @@ public class Vehicule {
     @Column(nullable = true)
     private Double rating;
 
-    @Lob
+    //@Lob
     @Column(nullable = true)
     private String image;
 
@@ -46,5 +48,7 @@ public class Vehicule {
 
 
     @OneToMany(mappedBy = "vehicule", cascade = CascadeType.ALL, fetch = FetchType.EAGER)
+    @JsonManagedReference
     private List<Review> reviews;
+
 }

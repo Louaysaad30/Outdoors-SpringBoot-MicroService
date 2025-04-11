@@ -27,6 +27,7 @@ public class Agence {
     private String numero;
     private String adresse;
 
+
     @JsonIgnore
     @OneToMany(mappedBy = "agence", cascade = CascadeType.ALL)
     private Set<Vehicule> vehicules;

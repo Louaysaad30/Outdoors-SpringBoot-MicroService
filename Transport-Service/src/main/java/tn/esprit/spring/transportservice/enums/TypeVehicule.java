@@ -6,5 +6,6 @@ public enum TypeVehicule {
     VELO ,
     BUS ,
     MINIBUS ,
+    SCOOTER
 
 }
