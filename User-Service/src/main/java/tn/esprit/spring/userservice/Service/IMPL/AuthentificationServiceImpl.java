@@ -7,6 +7,7 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.authentication.*;
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.web.server.ResponseStatusException;
@@ -28,6 +29,7 @@ import java.security.SecureRandom;
 import java.time.LocalDateTime;
 import java.util.HashMap;
 import java.util.List;
+import java.util.UUID;
 
 @Service
 @RequiredArgsConstructor
@@ -135,6 +137,53 @@ public class AuthentificationServiceImpl implements AuthenticationService {
         // Assuming you're using BCrypt or any other PasswordEncoder to compare the hashed passwords
         return bCryptPasswordEncoder.matches(enteredPassword, user.getPassword());
     }
+    public void resetPassword(String token, String newPassword) {
+        Token resetToken = tokenRepository.findByToken(token)
+                .orElseThrow(() -> new RuntimeException("Invalid or expired token"));
+
+        if (resetToken.getExpiresAt().isBefore(LocalDateTime.now())) {
+            throw new RuntimeException("Token has expired");
+        }
+
+        User user = resetToken.getUser();
+        // Validate that the password is new (not the same as the old one)
+        if (user.getPassword().equals(newPassword)) {
+            throw new RuntimeException("New password cannot be the same as the old one");
+        }
+
+        // Update the password (using a password encoder, for example)
+        user.setMotDePasse(bCryptPasswordEncoder.encode(newPassword)); // Fixed line
+        userRepository.save(user);
+
+        // Optionally, you can mark the token as validated
+        resetToken.setValidatedAt(LocalDateTime.now());
+        tokenRepository.save(resetToken);
+    }
+
+    public void sendResetLink(String email) throws MessagingException {
+        // Fetch the user by email
+        User user = userRepository.findByEmail(email)
+                .orElseThrow(() -> new RuntimeException("User not found"));
+
+        // Generate a reset token
+        String token = UUID.randomUUID().toString();
+        LocalDateTime now = LocalDateTime.now();
+        LocalDateTime expiryTime = now.plusHours(1);  // Set expiry time for the token
+        var resetToken = Token.builder()
+                .token(token)
+                .createdAt(LocalDateTime.now())
+                .expiresAt(expiryTime)
+                .user(user)
+                .build();
+        // Create and save the token in the database
+        tokenRepository.save(resetToken);
+
+        // Construct the password reset URL
+        String resetUrl = "http://localhost:4200/auth/pass-reset?token=" + token;
+
+        // Send the reset link via email
+        emailService.sendEmail(user.getEmail(), user.fullName(), EmailTemplateName.valueOf("RESET_PASSWORD"), resetUrl, token, "Password Reset Request");
+    }
     private void sendValidationEmail(User user) throws MessagingException {
         var newToken=generateAndSaveActivationToken(user);
         emailService.sendEmail(
@@ -170,4 +219,17 @@ public class AuthentificationServiceImpl implements AuthenticationService {
         }
         return codeBuilder.toString();
     }
+    @Override
+    public void changePassword(Long userId, String oldPassword, String newPassword) {
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "User not found"));
+
+        if (!bCryptPasswordEncoder.matches(oldPassword, user.getMotDePasse())) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Old password is incorrect");
+        }
+
+        user.setMotDePasse(bCryptPasswordEncoder.encode(newPassword));
+        userRepository.save(user);
+    }
+
 }

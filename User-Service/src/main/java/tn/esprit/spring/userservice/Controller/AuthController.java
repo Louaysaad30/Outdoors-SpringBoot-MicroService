@@ -8,13 +8,16 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.ErrorResponse;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.server.ResponseStatusException;
 import tn.esprit.spring.userservice.Entity.User;
 import tn.esprit.spring.userservice.Service.Interface.AuthenticationService;
 import tn.esprit.spring.userservice.dto.Request.AuthenticationRequest;
+import tn.esprit.spring.userservice.dto.Request.ChangePasswordRequest;
 import tn.esprit.spring.userservice.dto.Request.RegistrationRequest;
 import tn.esprit.spring.userservice.dto.Response.AuthenticationResponse;
+import tn.esprit.spring.userservice.handler.CustomError;
 
 import java.util.Collections;
 import java.util.Map;
@@ -96,7 +99,45 @@ public class AuthController {
     }
 
 
+    @PutMapping("/change-password")
+    public ResponseEntity<?> changePassword(@RequestBody ChangePasswordRequest request) {
+        try {
+            service.changePassword(request.getUserId(), request.getOldPassword(), request.getNewPassword());
+            return ResponseEntity.ok(Collections.singletonMap("message", "Password changed successfully"));
+        } catch (ResponseStatusException ex) {
+            return ResponseEntity
+                    .status(ex.getStatusCode())
+                    .body(Collections.singletonMap("message", ex.getReason())); // ensure it's a JSON response
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body(Collections.singletonMap("message", "An unexpected error occurred"));
+        }
+    }
+    @PostMapping("/forgot-password")
+    public ResponseEntity<?> forgotPassword(@RequestBody Map<String, String> request) {
+        String email = request.get("email");
 
+        try {
+            service.sendResetLink(email);  // Call the sendResetLink method
+            return ResponseEntity.ok(Map.of("message", "Password reset link sent to your email"));
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                    .body(new CustomError(400, e.getMessage())); // Return error with code and message
+        }
+    }
+
+
+    @PostMapping("/reset-password")
+    public ResponseEntity<?> resetPassword(@RequestParam String token, @RequestBody Map<String, String> body) {
+        String newPassword = body.get("newPassword");
+        try {
+            service.resetPassword(token, newPassword);  // Reset password logic
+            return ResponseEntity.ok(Map.of("message", "Password successfully reset"));
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                    .body(Map.of("error", e.getMessage()));
+        }
+    }
     @PostMapping("/logout")
     public ResponseEntity<?> logout(HttpServletRequest request) {
         // No real logic needed with JWT, just return OK
