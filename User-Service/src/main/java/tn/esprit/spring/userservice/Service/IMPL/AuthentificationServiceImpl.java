@@ -179,7 +179,7 @@ public class AuthentificationServiceImpl implements AuthenticationService {
         tokenRepository.save(resetToken);
 
         // Construct the password reset URL
-        String resetUrl = "http://localhost:4200/auth/pass-reset?token=" + token;
+        String resetUrl = "http://localhost:4200/auth/pass-change?token=" + token;
 
         // Send the reset link via email
         emailService.sendEmail(user.getEmail(), user.fullName(), EmailTemplateName.valueOf("RESET_PASSWORD"), resetUrl, token, "Password Reset Request");
