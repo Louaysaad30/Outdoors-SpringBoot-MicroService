@@ -1,5 +1,6 @@
 package tn.esprit.spring.forumservice.entity;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import lombok.*;
 
@@ -21,12 +22,12 @@ public class Reaction {
     private UUID id;
 
     @Column(nullable = false)
-    private Integer userId = 10; // ID statique
+    private Integer userId ; // ID statique
 
+    @JsonIgnore
     @ManyToOne
     @JoinColumn(name = "post_id", nullable = true)
     private Post post;  // Réaction donnée à un post
-
 
 
     @Enumerated(EnumType.STRING)

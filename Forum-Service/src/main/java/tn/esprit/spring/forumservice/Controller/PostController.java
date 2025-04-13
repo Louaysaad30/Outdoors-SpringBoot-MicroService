@@ -39,45 +39,57 @@ public ResponseEntity<List<Post>> getAllPosts() {
 }
 
 @PostMapping(value = "/add", consumes = "multipart/form-data")
-public ResponseEntity<Post> createPost(@RequestParam("content") String content, @RequestParam("userId") Integer userId, @RequestParam(value = "mediaFiles", required = false) List<MultipartFile> mediaFiles) {
+public ResponseEntity<?> createPost(@RequestParam("content") String content,
+                                    @RequestParam("userId") Integer userId,
+                                    @RequestParam(value = "mediaFiles", required = false) List<MultipartFile> mediaFiles) {
 
-        try {
-            Post post = new Post();
-            post.setContent(content);
-            post.setUserId(userId);
-            post.setCreatedAt(java.time.LocalDateTime.now());
+    try {
+        Post post = new Post();
+        post.setContent(content);
+        post.setUserId(userId);
+        post.setCreatedAt(java.time.LocalDateTime.now());
 
-            // Save the post first to avoid TransientPropertyValueException
-            Post savedPost = postService.createPost(post);
+        // Save the post first to avoid TransientPropertyValueException
+        Post savedPost = postService.createPost(post);
 
-            if (mediaFiles != null && !mediaFiles.isEmpty()) {
-                List<Media> mediaList = new ArrayList<>();
-                for (MultipartFile file : mediaFiles) {
-                    Map uploadResult = cloudinary.uploader().upload(file.getBytes(), ObjectUtils.asMap("resource_type", "auto"));
-                    String fileUrl = (String) uploadResult.get("url");
+        if (mediaFiles != null && !mediaFiles.isEmpty()) {
+            List<Media> mediaList = new ArrayList<>();
+            for (MultipartFile file : mediaFiles) {
+                Map uploadResult = cloudinary.uploader().upload(file.getBytes(), ObjectUtils.asMap("resource_type", "auto"));
+                String fileUrl = (String) uploadResult.get("url");
 
-                    Media media = new Media();
-                    media.setMediaUrl(fileUrl);
-                    media.setMediaType(file.getContentType().contains("image") ? MediaType.IMAGE : MediaType.VIDEO);
-                    media.setPost(savedPost);
+                Media media = new Media();
+                media.setMediaUrl(fileUrl);
+                media.setUserId(userId);
+                media.setMediaType(file.getContentType().contains("image") ? MediaType.IMAGE : MediaType.VIDEO);
+                media.setPost(savedPost);
 
-                    mediaService.saveMedia(media);
-                    mediaList.add(media);
-                }
-
-                savedPost.setMedia(mediaList);
-                savedPost.setHasMedia(true);
-                savedPost = postService.createPost(savedPost);
-            } else {
-                savedPost.setHasMedia(false);
+                mediaService.saveMedia(media);
+                mediaList.add(media);
             }
 
-            return new ResponseEntity<>(savedPost, HttpStatus.CREATED);
-        } catch (IOException e) {
-            return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
+            savedPost.setMedia(mediaList);
+            savedPost.setHasMedia(true);
+            savedPost = postService.createPost(savedPost);
+        } else {
+            savedPost.setHasMedia(false);
         }
-    }
 
+        return  ResponseEntity.status(HttpStatus.CREATED)
+                .contentType(org.springframework.http.MediaType.APPLICATION_JSON)
+                .body(savedPost);
+    } catch (RuntimeException e) {
+        if (e.getMessage().contains("inappropriate language")) {
+             return ResponseEntity
+                    .status(HttpStatus.BAD_REQUEST)
+                    .contentType(org.springframework.http.MediaType.APPLICATION_JSON)
+                    .body(Map.of("error", "Message here"));
+        }
+        return new ResponseEntity<>(Map.of("error", "An unexpected error occurred"), HttpStatus.INTERNAL_SERVER_ERROR);
+    } catch (IOException e) {
+        return new ResponseEntity<>(Map.of("error", "Error processing media files"), HttpStatus.INTERNAL_SERVER_ERROR);
+    }
+}
     @GetMapping("/user/{userId}")
     public List<Post> getUserPosts(@PathVariable Integer userId) {
         return postService.getPostsByUser(userId);
@@ -109,4 +121,16 @@ public ResponseEntity<Post> createPost(@RequestParam("content") String content, 
 
         return postService.updatePost(postId, content, mediaUrls, mediaTypes, mediaToDelete);
     }
+
+    @GetMapping("/{userId}/media")
+    public ResponseEntity<List<Media>> getUserPostsMedia(@PathVariable Integer userId) {
+        List<Media> media = postService.getMediaFromUserPosts(userId);
+        return ResponseEntity.ok(media);
+    }
+
+@GetMapping("/top-rated-posts")
+public ResponseEntity<List<Map<String, Object>>> getTopRatedPosts() {
+    List<Map<String, Object>> topRatedPosts = postService.getTopRatedPostsForCurrentMonth(5);
+    return ResponseEntity.ok(topRatedPosts);
+}
 }

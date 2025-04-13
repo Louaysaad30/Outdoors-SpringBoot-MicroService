@@ -1,5 +1,7 @@
 package tn.esprit.spring.forumservice.entity;
 
+import com.fasterxml.jackson.annotation.JsonBackReference;
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonManagedReference;
 import jakarta.persistence.*;
 import lombok.*;
@@ -31,7 +33,7 @@ public class Post {
     private Boolean hasMedia = false; // Indique si le post contient un média
 
     @Column(nullable = false)
-    private Integer userId = 10; // ID statique
+    private Integer userId; // ID statique
 
     @Transient // Ne sera pas stocké en base
     private String username = "test_user";
@@ -39,7 +41,7 @@ public class Post {
     @Transient
     private String email = "test_user@example.com";
 
-    @JsonManagedReference
+    @JsonIgnoreProperties("post") // This prevents the circular reference
     @OneToMany(mappedBy = "post", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
     private List<Media> media;  // Liste des médias attachés au post (images, vidéos)
 
