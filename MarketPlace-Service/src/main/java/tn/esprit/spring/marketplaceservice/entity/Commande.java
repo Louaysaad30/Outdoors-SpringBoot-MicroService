@@ -21,8 +21,19 @@ public class Commande {
         @Id
         @GeneratedValue(strategy = GenerationType.IDENTITY)
         Long idCommande;
-        LocalDate        dateCommande;
+        LocalDate dateCommande;
         Double montantCommande;
+        String nom;
+        Long phone;
+        String email;
+        String adresse;
+        String gouvernement;
+        String city;
+        String shippingMethod;
+        Long AdditionalService;
+        Long userId;
+        String etat;
+        String OrderNumber;
 
         @JsonIgnore
         @OneToMany(mappedBy = "commande")

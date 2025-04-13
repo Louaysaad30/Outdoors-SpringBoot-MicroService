@@ -2,6 +2,9 @@ package tn.esprit.spring.marketplaceservice.controllers;
 
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.AllArgsConstructor;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import tn.esprit.spring.marketplaceservice.DTO.UpdateQuantiteDTO;
@@ -60,4 +63,16 @@ public class LigneCommandeController {
             return ResponseEntity.notFound().build();
         }
     }
+    @PutMapping("/affecterCommandeToLigneCommande/{idLigneCommande}/{idCommande}")
+    public LigneCommande affecterCommandeToLigneCommande(@PathVariable Long idLigneCommande, @PathVariable Long idCommande) {
+        return iLigneCommandeService.affecterCommandeToLigneCommande(idLigneCommande, idCommande);
+    }
+
+    @GetMapping("/getByCommande/{idCommande}")
+    public List<LigneCommande> getByCommandeId(@PathVariable Long idCommande) {
+        return iLigneCommandeService.findByCommandeId(idCommande);
+    }
+
+    // LigneCommandeController.java
+
 }

@@ -5,12 +5,16 @@ import lombok.AllArgsConstructor;
 import org.springframework.stereotype.Service;
 import tn.esprit.spring.marketplaceservice.DTO.UpdateQuantiteDTO;
 import tn.esprit.spring.marketplaceservice.DTO.UpdateTotalDTO;
+import tn.esprit.spring.marketplaceservice.entity.Commande;
 import tn.esprit.spring.marketplaceservice.entity.LigneCommande;
 import tn.esprit.spring.marketplaceservice.entity.Panier;
+import tn.esprit.spring.marketplaceservice.repository.CommandeRepository;
 import tn.esprit.spring.marketplaceservice.repository.LigneCommandeRepository;
 import tn.esprit.spring.marketplaceservice.repository.PanierRepository;
 import tn.esprit.spring.marketplaceservice.services.interfaces.ILigneCommandeService;
 
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
 import java.util.List;
 
 @AllArgsConstructor
@@ -19,6 +23,7 @@ public class LigneCommandeServiceIMPL implements ILigneCommandeService {
 
     LigneCommandeRepository ligneCommandeRepository;
     PanierRepository panierRepository;
+    CommandeRepository commandeRepository;
 
     @Override
     public List<LigneCommande> retrieveLigneCommandes() {
@@ -71,7 +76,28 @@ public class LigneCommandeServiceIMPL implements ILigneCommandeService {
     }
 
     @Override
+    public LigneCommande affecterCommandeToLigneCommande(Long idLigneCommande, Long idCommande) {
+        LigneCommande ligneCommande = ligneCommandeRepository.findById(idLigneCommande)
+                .orElseThrow(() -> new RuntimeException("LigneCommande not found"));
+        Commande commande = commandeRepository.findById(idCommande)
+                .orElseThrow(() -> new RuntimeException("Commande not found"));
+
+        ligneCommande.setCommande(commande);
+        return ligneCommandeRepository.save(ligneCommande);
+    }
+
+    @Override
+    public List<LigneCommande> findByCommandeId(Long idCommande) {
+        return ligneCommandeRepository.findByCommandeIdCommande(idCommande);
+    }
+
+    @Override
     public LigneCommande updateLigneCommande(LigneCommande ligneCommande) {
         return ligneCommandeRepository.save(ligneCommande);
     }
+
+    // LigneCommandeServiceIMPL.java
+
+
+
 }
