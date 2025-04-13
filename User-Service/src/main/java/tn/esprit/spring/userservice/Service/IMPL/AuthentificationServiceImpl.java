@@ -60,14 +60,15 @@ public class AuthentificationServiceImpl implements AuthenticationService {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Email '" + request.getEmail() + "' is already in use.");
         }
 
-        var userRole = roleRepository.findByRoleType(RoleType.USER)
-                .orElseThrow(() -> new IllegalArgumentException("Role USER is not initialized"));
+        RoleType roleType = RoleType.valueOf(request.getRole()); // e.g., AGENT or USER
+        var userRole = roleRepository.findByRoleType(roleType)
+                .orElseThrow(() -> new IllegalArgumentException("Role " + roleType + " is not initialized"));
 
         String imageUrl = null;
         MultipartFile image = request.getImage();
         if (image != null && !image.isEmpty()) {
             try {
-                imageUrl = cloudinaryService.uploadImage(image); // returns String
+                imageUrl = cloudinaryService.uploadImage(image);
             } catch (IOException e) {
                 throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "Image upload failed", e);
             }
@@ -78,12 +79,19 @@ public class AuthentificationServiceImpl implements AuthenticationService {
         user.setPrenom(request.getPrenom());
         user.setDateNaissance(request.getDateNaissance());
         user.setTel(request.getTel());
-        user.setImage(imageUrl); // this is just a String in DB
+        user.setImage(imageUrl);
         user.setMotDePasse(bCryptPasswordEncoder.encode(request.getMotDePasse()));
         user.setEmail(request.getEmail());
         user.setAccountLocked(false);
         user.setEnabled(false);
+        user.setStatus(false);
+
         user.setRoles(List.of(userRole));
+
+        // Only for AGENT role
+        if (roleType == RoleType.AGENCE) {
+            user.setLocation(request.getLocation());
+        }
 
         userRepository.save(user);
         sendValidationEmail(user);
@@ -103,6 +111,11 @@ public class AuthentificationServiceImpl implements AuthenticationService {
         // Check if the account is enabled (activated)
         if (!user.isEnabled()) {
             throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Account is not activated. Please check your email.");
+        }
+
+        // ✅ Check if status is true (only allow login if status is true)
+        if (!user.getStatus()) {
+            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Your account is under verification .");
         }
 
         // Check if the password matches

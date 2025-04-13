@@ -13,4 +13,7 @@ public interface UserService {
     User getUserByEmail(String email);
     User updateUser(Long id, UserUpdateRequest request) throws IOException;
     User blockUser(Long id, boolean unblock);
-    void deleteUser(Long id);}
+    void deleteUser(Long id);
+    User verifyUser(Long id);
+
+}

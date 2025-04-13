@@ -15,7 +15,6 @@ import java.util.Locale;
 public class UserUpdateRequest {
     private String nom;
 
-
     private String prenom;
 
     private int tel;
@@ -24,5 +23,6 @@ public class UserUpdateRequest {
 
     private String email;
 
-    private MultipartFile image;  // For file upload
+    private MultipartFile image;
+    private String location;
 }

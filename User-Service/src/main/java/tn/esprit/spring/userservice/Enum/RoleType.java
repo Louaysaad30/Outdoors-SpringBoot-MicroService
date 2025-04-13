@@ -7,5 +7,5 @@ public enum RoleType {
     FORMATEUR,
     EVENT_MANAGER,
     AGENCE,
-x
+
 }

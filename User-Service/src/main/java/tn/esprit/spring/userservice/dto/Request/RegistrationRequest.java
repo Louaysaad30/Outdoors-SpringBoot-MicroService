@@ -36,6 +36,9 @@ public class RegistrationRequest {
     MultipartFile image;
     int tel;
     LocalDate dateNaissance;
+    private String role;
+    private String location; // only for AGENT
+
 
 
 }

@@ -46,7 +46,8 @@ public class UserController {
     public ResponseEntity<?> blockUser(@PathVariable Long id) {
         try {
             User user = userService.blockUser(id, false);
-            return ResponseEntity.ok("User blocked successfully.");
+            return ResponseEntity.ok(Map.of("message", "User blocked successfully."));
+
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body("User not found with ID: " + id);
         }
@@ -56,7 +57,7 @@ public class UserController {
     public ResponseEntity<?> unblockUser(@PathVariable Long id) {
         try {
             User user = userService.blockUser(id, true);
-            return ResponseEntity.ok("User unblocked successfully.");
+            return ResponseEntity.ok(Map.of("message", "User unblocked successfully."));
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body("User not found with ID: " + id);
         }
@@ -64,7 +65,7 @@ public class UserController {
     @PutMapping(value = "/{id}", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     public ResponseEntity<?> updateUser(
             @PathVariable Long id,
-            @ModelAttribute @Valid UserUpdateRequest request) {  // Use @ModelAttribute for multipart
+            @ModelAttribute @Valid UserUpdateRequest request) {
         try {
             User updatedUser = userService.updateUser(id, request);
             return ResponseEntity.ok(updatedUser);
@@ -84,13 +85,26 @@ public class UserController {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body("User not found with ID: " + id);
         }
     }
+    @PutMapping("/verify/{id}")
+    public ResponseEntity<?> verifyUser(@PathVariable Long id) {
+        try {
+            User user = userService.verifyUser(id);
+            return ResponseEntity.ok(Map.of("message", "User verified successfully.", "user", user));
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body("User not found with ID: " + id);
+        }
+    }
+
     @DeleteMapping("/{id}")
     public ResponseEntity<?> deleteUser(@PathVariable Long id) {
         try {
-            userService.deleteUser(id);
-            return ResponseEntity.ok("User deleted successfully.");
-        } catch (Exception e) {
-            return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Failed to delete user with ID: " + id);
+            userService.deleteUser(id); // Call the service method to delete the user
+            return ResponseEntity.ok(Map.of("message", "User deleted successfully."));
+
+        } catch (RuntimeException e) {
+            // Return error message if the user was not found or any other issue
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(e.getMessage());
         }
     }
+
 }
