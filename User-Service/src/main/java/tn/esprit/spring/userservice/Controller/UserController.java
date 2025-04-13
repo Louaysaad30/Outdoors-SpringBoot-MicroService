@@ -1,12 +1,18 @@
 package tn.esprit.spring.userservice.Controller;
 
+import jakarta.validation.Valid;
 import lombok.AllArgsConstructor;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
+import org.springframework.web.server.ResponseStatusException;
 import tn.esprit.spring.userservice.Entity.User;
 import org.springframework.http.HttpStatus;
 import tn.esprit.spring.userservice.Service.Interface.UserService;
+import tn.esprit.spring.userservice.dto.Request.UserUpdateRequest;
 
+import java.io.IOException;
 import java.util.List;
 import java.util.Map;
 
@@ -55,17 +61,20 @@ public class UserController {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body("User not found with ID: " + id);
         }
     }
-
-    @PutMapping("/{id}")
-    public ResponseEntity<?> updateUser(@PathVariable Long id, @RequestBody User updateRequest) {
+    @PutMapping(value = "/{id}", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    public ResponseEntity<?> updateUser(
+            @PathVariable Long id,
+            @ModelAttribute @Valid UserUpdateRequest request) {  // Use @ModelAttribute for multipart
         try {
-            User updatedUser = userService.updateUser(id, updateRequest);
+            User updatedUser = userService.updateUser(id, request);
             return ResponseEntity.ok(updatedUser);
-        } catch (Exception e) {
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Failed to update user profile.");
+        } catch (ResponseStatusException ex) {
+            return ResponseEntity.status(ex.getStatusCode())
+                    .body(Map.of("status", ex.getStatusCode().value(), "message", ex.getReason()));
+        } catch (IOException e) {
+            throw new RuntimeException(e);
         }
     }
-
     @GetMapping("/{id}")
     public ResponseEntity<?> getUserById(@PathVariable Long id) {
         try {

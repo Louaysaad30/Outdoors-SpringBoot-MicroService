@@ -1,5 +1,7 @@
 package tn.esprit.spring.userservice.Service.IMPL;
 
+import com.cloudinary.Cloudinary;
+import com.cloudinary.utils.ObjectUtils;
 import jakarta.mail.MessagingException;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
@@ -10,6 +12,7 @@ import org.springframework.security.authentication.*;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.server.ResponseStatusException;
 import tn.esprit.spring.userservice.Entity.Token;
 import tn.esprit.spring.userservice.Entity.User;
@@ -21,14 +24,17 @@ import tn.esprit.spring.userservice.Repository.UserRepository;
 import tn.esprit.spring.userservice.Security.JwtService;
 import tn.esprit.spring.userservice.Service.Interface.AuthenticationService;
 import tn.esprit.spring.userservice.Service.Interface.EmailService;
+import tn.esprit.spring.userservice.Service.Interface.ICloudinaryService;
 import tn.esprit.spring.userservice.dto.Request.AuthenticationRequest;
 import tn.esprit.spring.userservice.dto.Request.RegistrationRequest;
 import tn.esprit.spring.userservice.dto.Response.AuthenticationResponse;
 
+import java.io.IOException;
 import java.security.SecureRandom;
 import java.time.LocalDateTime;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.UUID;
 
 @Service
@@ -44,6 +50,8 @@ public class AuthentificationServiceImpl implements AuthenticationService {
     private final JwtService jwtService;
     @Value("${application.mailing.frontend.activation-url:http://localhost:4200/activate-account}")
     private String activationUrl;
+    private final ICloudinaryService cloudinaryService;
+
 
 
     @Override
@@ -53,14 +61,24 @@ public class AuthentificationServiceImpl implements AuthenticationService {
         }
 
         var userRole = roleRepository.findByRoleType(RoleType.USER)
-                .orElseThrow(() -> new IllegalArgumentException("Role user is not initialized"));
+                .orElseThrow(() -> new IllegalArgumentException("Role USER is not initialized"));
+
+        String imageUrl = null;
+        MultipartFile image = request.getImage();
+        if (image != null && !image.isEmpty()) {
+            try {
+                imageUrl = cloudinaryService.uploadImage(image); // returns String
+            } catch (IOException e) {
+                throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "Image upload failed", e);
+            }
+        }
 
         User user = new User();
         user.setNom(request.getNom());
         user.setPrenom(request.getPrenom());
         user.setDateNaissance(request.getDateNaissance());
         user.setTel(request.getTel());
-        user.setImage(request.getImage());
+        user.setImage(imageUrl); // this is just a String in DB
         user.setMotDePasse(bCryptPasswordEncoder.encode(request.getMotDePasse()));
         user.setEmail(request.getEmail());
         user.setAccountLocked(false);
