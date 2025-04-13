@@ -126,18 +126,22 @@ public class AuthController {
         }
     }
 
-
     @PostMapping("/reset-password")
     public ResponseEntity<?> resetPassword(@RequestParam String token, @RequestBody Map<String, String> body) {
         String newPassword = body.get("newPassword");
         try {
-            service.resetPassword(token, newPassword);  // Reset password logic
-            return ResponseEntity.ok(Map.of("message", "Password successfully reset"));
+            service.resetPassword(token, newPassword);
+            return ResponseEntity.ok(Collections.singletonMap("message", "Password successfully reset"));
+        } catch (ResponseStatusException ex) {
+            return ResponseEntity.status(ex.getStatusCode())
+                    .body(Map.of("status", ex.getStatusCode().value(), "message", ex.getReason()));
         } catch (Exception e) {
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST)
-                    .body(Map.of("error", e.getMessage()));
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body(Collections.singletonMap("message", "An unexpected error occurred: " + e.getMessage()));
         }
     }
+
+
     @PostMapping("/logout")
     public ResponseEntity<?> logout(HttpServletRequest request) {
         // No real logic needed with JWT, just return OK

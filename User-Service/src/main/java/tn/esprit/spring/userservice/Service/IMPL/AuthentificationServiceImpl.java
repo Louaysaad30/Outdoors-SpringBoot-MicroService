@@ -147,9 +147,10 @@ public class AuthentificationServiceImpl implements AuthenticationService {
 
         User user = resetToken.getUser();
         // Validate that the password is new (not the same as the old one)
-        if (user.getPassword().equals(newPassword)) {
+        if (bCryptPasswordEncoder.matches(newPassword, user.getPassword())) {
             throw new RuntimeException("New password cannot be the same as the old one");
         }
+
 
         // Update the password (using a password encoder, for example)
         user.setMotDePasse(bCryptPasswordEncoder.encode(newPassword)); // Fixed line
