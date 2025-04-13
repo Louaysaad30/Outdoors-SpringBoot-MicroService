@@ -34,6 +34,7 @@ public class Ticket {
     //@JsonIdentityInfo(generator = ObjectIdGenerators.PropertyGenerator.class, property = "id")
     //@JsonIdentityReference(alwaysAsId = true)
     //@JsonBackReference
+    @JsonIgnoreProperties({"tickets"})
     private Event event;
 
     @OneToMany(mappedBy = "ticket", cascade = CascadeType.ALL)

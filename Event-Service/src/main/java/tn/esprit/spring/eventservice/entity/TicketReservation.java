@@ -1,5 +1,7 @@
 package tn.esprit.spring.eventservice.entity;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import jakarta.persistence.*;
 import lombok.*;
 
@@ -18,5 +20,6 @@ public class TicketReservation {
     private Long userId;
 
     @ManyToOne
+    @JsonIgnoreProperties({"reservations"})
     private Ticket ticket;
 }
