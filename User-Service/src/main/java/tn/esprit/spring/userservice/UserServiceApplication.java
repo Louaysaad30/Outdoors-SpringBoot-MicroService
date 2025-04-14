@@ -40,7 +40,7 @@ public class UserServiceApplication {
 				roleRepository.save(Role.builder().roleType(RoleType.LIVREUR).build());
 			}
 			if (roleRepository.findByRoleType(RoleType.OWNER).isEmpty()) {
-				roleRepository.save(Role.builder().roleType(RoleType.USER).build());
+				roleRepository.save(Role.builder().roleType(RoleType.OWNER).build());
 			}
 		};
 	}

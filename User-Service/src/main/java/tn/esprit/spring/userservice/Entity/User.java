@@ -8,6 +8,7 @@ import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 import tn.esprit.spring.userservice.Entity.Role;
+import tn.esprit.spring.userservice.Enum.Etat;
 
 import java.time.LocalDate;
 import java.util.Collection;
@@ -35,7 +36,8 @@ public class User  implements UserDetails {
     int tel;
     LocalDate dateNaissance;
     private String location;
-
+    @Enumerated(EnumType.STRING)
+    Etat etat;
     @ManyToMany
     @JsonIgnore
     List<Role> roles;

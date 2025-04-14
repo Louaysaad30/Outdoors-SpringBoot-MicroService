@@ -63,9 +63,7 @@ public class UserController {
         }
     }
     @PutMapping(value = "/{id}", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
-    public ResponseEntity<?> updateUser(
-            @PathVariable Long id,
-            @ModelAttribute @Valid UserUpdateRequest request) {
+    public ResponseEntity<?> updateUser(@PathVariable Long id, @ModelAttribute @Valid UserUpdateRequest request) {
         try {
             User updatedUser = userService.updateUser(id, request);
             return ResponseEntity.ok(updatedUser);
@@ -105,6 +103,29 @@ public class UserController {
             // Return error message if the user was not found or any other issue
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body(e.getMessage());
         }
+    }
+
+    // 🔹 GET connected users
+    @GetMapping("/connected")
+    public ResponseEntity<List<User>> getUserConnected() {
+        List<User> connectedUsers = userService.findConnectedUsers();
+        return ResponseEntity.ok(connectedUsers);
+    }
+
+    // 🔹 PUT connect a user (set ONLINE)
+    @PutMapping("/connect/{id}")
+    public ResponseEntity<String> connectUser(@PathVariable Long id) {
+        User user = userService.getUserById(id);
+        user.setEtat(tn.esprit.spring.userservice.Enum.Etat.ONLINE);
+        userService.saveUser(user);
+        return ResponseEntity.ok("User " + user.getNom() + " is now ONLINE");
+    }
+
+    @PutMapping("/disconnect/{id}")
+    public ResponseEntity<String> disconnectUser(@PathVariable Long id) {
+        User user = userService.getUserById(id);
+        userService.disconnect(user);
+        return ResponseEntity.ok("User " + user.getNom() + " is now OFFLINE");
     }
 
 }

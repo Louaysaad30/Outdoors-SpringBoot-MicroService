@@ -6,6 +6,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.server.ResponseStatusException;
 import tn.esprit.spring.userservice.Entity.User;
 import tn.esprit.spring.userservice.Enum.EmailTemplateName;
+import tn.esprit.spring.userservice.Enum.Etat;
 import tn.esprit.spring.userservice.Repository.TokenRepository;
 import tn.esprit.spring.userservice.Repository.UserRepository;
 import tn.esprit.spring.userservice.Service.Interface.EmailService;
@@ -23,7 +24,7 @@ public class UserServiceIMPL implements UserService {
     UserRepository userRepository;
     TokenRepository  tokenRepository ;
     private final ICloudinaryService cloudinaryService;
-    private final EmailService emailService; // <-- Add this
+    private final EmailService emailService;
 
 
 
@@ -128,6 +129,24 @@ public class UserServiceIMPL implements UserService {
     }
 
 
+
+
+    public void saveUser(User user) {
+        user.setEtat(Etat.ONLINE);
+        userRepository.save(user);
+    }
+
+    public void disconnect(User user) {
+        var storedUser = userRepository.findById(user.getId()).orElse(null);
+        if (storedUser != null) {
+            storedUser.setEtat(Etat.OFFLINE);
+            userRepository.save(storedUser);
+        }
+    }
+
+    public List<User> findConnectedUsers() {
+        return userRepository.findAllByEtat(Etat.ONLINE);
+    }
 
 }
 

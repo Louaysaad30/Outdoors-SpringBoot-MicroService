@@ -15,5 +15,7 @@ public interface UserService {
     User blockUser(Long id, boolean unblock);
     void deleteUser(Long id);
     User verifyUser(Long id);
-
+    public void saveUser(User user);
+    public void disconnect(User user);
+    public List<User> findConnectedUsers();
 }
