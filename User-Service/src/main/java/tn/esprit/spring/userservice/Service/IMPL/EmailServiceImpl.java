@@ -49,7 +49,7 @@ public class EmailServiceImpl implements EmailService {
         context.setVariables(properties);
 
         helper.setFrom("onsfidha3@gmail.com");
-        helper.setTo("onsfidha3@gmail.com");
+        helper.setTo(to);
         helper.setSubject(subject);
 
         String template = templateEngine.process(templateName, context);

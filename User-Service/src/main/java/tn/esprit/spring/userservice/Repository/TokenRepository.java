@@ -7,4 +7,6 @@ import java.util.Optional;
 
 public interface TokenRepository extends JpaRepository<Token,Long> {
     Optional<Token> findByToken(String token);
+    void deleteByUserId(Long userId); // Method to delete tokens associated with a specific user
+
 }

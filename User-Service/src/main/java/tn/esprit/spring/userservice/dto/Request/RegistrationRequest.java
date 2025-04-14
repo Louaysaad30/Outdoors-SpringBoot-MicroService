@@ -5,6 +5,7 @@ import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotEmpty;
 import jakarta.validation.constraints.Size;
 import lombok.*;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.time.LocalDate;
 
@@ -32,9 +33,12 @@ public class RegistrationRequest {
     @Size(min =8 ,message = "mdp minimun 8 caractéres")
     String motDePasse;
 
-    String image;
+    MultipartFile image;
     int tel;
     LocalDate dateNaissance;
+    private String role;
+    private String location; // only for AGENT
+
 
 
 }

@@ -31,9 +31,11 @@ public class User  implements UserDetails {
     String email;
     String motDePasse;
     String image;
-    String status;
+    Boolean status;
     int tel;
     LocalDate dateNaissance;
+    private String location;
+
     @ManyToMany
     @JsonIgnore
     List<Role> roles;
