@@ -16,4 +16,9 @@ public interface AuthenticationService {
     void activateAccount(String token) throws MessagingException;
     public void resendToken(String email) throws MessagingException;
     public boolean verifyPassword(Long id, String enteredPassword);
+    public void changePassword(Long userId, String oldPassword, String newPassword) ;
+
+    void sendResetLink(String email) throws MessagingException;
+
+    void resetPassword(String token, String newPassword);
 }
