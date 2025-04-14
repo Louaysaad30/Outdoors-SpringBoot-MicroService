@@ -8,6 +8,7 @@
         <sourceTestOutputDir name="target/generated-test-sources/test-annotations" />
         <outputRelativeToContentRoot value="true" />
         <module name="Eureka-Server" />
+
       </profile>
       <profile name="Annotation profile for Transport-Service" enabled="true">
         <sourceOutputDir name="target/generated-sources/annotations" />
@@ -17,20 +18,44 @@
           <entry name="$MAVEN_REPOSITORY$/org/projectlombok/lombok/unknown/lombok-unknown.jar" />
         </processorPath>
         <module name="Formation-Service" />
+
+
         <module name="MarketPlace-Service" />
         <module name="Transport-Service" />
         <module name="Forum-Service" />
+
       </profile>
-      <profile name="Annotation profile for User-Service" enabled="true">
+      <profile name="Annotation profile for Camping-Service" enabled="true">
+
+        <module name="User-Service" />
+      </profile>
+      <profile name="Annotation profile for Formation-Service" enabled="true">
+      </profile>
+      <profile name="Annotation profile for MarketPlace-Service" enabled="true">
+
         <sourceOutputDir name="target/generated-sources/annotations" />
         <sourceTestOutputDir name="target/generated-test-sources/test-annotations" />
         <outputRelativeToContentRoot value="true" />
         <processorPath useClasspath="false">
           <entry name="$MAVEN_REPOSITORY$/org/projectlombok/lombok/1.18.30/lombok-1.18.30.jar" />
         </processorPath>
-        <module name="Event-Service" />
+
+      </profile>
+      <profile name="Annotation profile for User-Service" enabled="true">
+        <sourceOutputDir name="target/generated-sources/annotations" />
+        <sourceTestOutputDir name="target/generated-test-sources/test-annotations" />
+        <outputRelativeToContentRoot value="true" />
+        <processorPath useClasspath="false">
+          <entry name="$MAVEN_REPOSITORY$/org/projectlombok/lombok/1.18.36/lombok-1.18.36.jar" />
+        </processorPath>
+        <module name="Formation-Service" />
+        <module name="MarketPlace-Service" />
+        <module name="Transport-Service" />
+        <module name="Forum-Service" />
         <module name="User-Service" />
         <module name="Camping-Service" />
+
+
       </profile>
     </annotationProcessing>
   </component>
@@ -44,6 +69,14 @@
       <module name="MarketPlace-Service" options="-parameters" />
       <module name="Transport-Service" options="-parameters" />
       <module name="User-Service" options="-parameters" />
+
+      <module name="Event-Service" options="" />
+      <module name="Formation-Service" options="-parameters" />
+      <module name="Forum-Service" options="" />
+      <module name="MarketPlace-Service" options="" />
+      <module name="Transport-Service" options="" />
+      <module name="User-Service" options="" />
+
     </option>
   </component>
 </project>
