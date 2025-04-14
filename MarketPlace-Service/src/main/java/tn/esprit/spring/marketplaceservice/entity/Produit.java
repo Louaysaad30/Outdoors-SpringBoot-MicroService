@@ -42,6 +42,8 @@ public class Produit {
     @OneToMany(mappedBy = "produit", cascade = CascadeType.ALL, orphanRemoval = true)
     List<ProductImage> imageGallery = new ArrayList<>();
 
+
+
     // Helper method to add an image to gallery
     public void addImage(String imageUrl) {
         ProductImage image = new ProductImage();

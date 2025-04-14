@@ -23,7 +23,7 @@ public class FavorisController {
     }
 
     @PostMapping("/addFavoris")
-    public Favoris addFavoris(Favoris favoris) {
+    public Favoris addFavoris(@RequestBody Favoris favoris) {
         return iFavorisService.addFavoris(favoris);
     }
 
