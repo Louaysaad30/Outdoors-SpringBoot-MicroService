@@ -31,13 +31,14 @@
         <module name="User-Service" />
       </profile>
       <profile name="Annotation profile for Formation-Service" enabled="true">
+      </profile>
+      <profile name="Annotation profile for MarketPlace-Service" enabled="true">
         <sourceOutputDir name="target/generated-sources/annotations" />
         <sourceTestOutputDir name="target/generated-test-sources/test-annotations" />
         <outputRelativeToContentRoot value="true" />
         <processorPath useClasspath="false">
           <entry name="$MAVEN_REPOSITORY$/org/projectlombok/lombok/1.18.30/lombok-1.18.30.jar" />
         </processorPath>
-        <module name="Event-Service" />
       </profile>
       <profile name="Annotation profile for User-Service" enabled="true">
         <sourceOutputDir name="target/generated-sources/annotations" />
@@ -53,11 +54,6 @@
         <module name="User-Service" />
         <module name="Camping-Service" />
 
-        <module name="Camping-Service" />
-        <module name="User-Service" />
-
-        <module name="Formation-Service" />
-        <module name="Camping-Service" />
       </profile>
     </annotationProcessing>
   </component>
@@ -78,6 +74,7 @@
       <module name="MarketPlace-Service" options="" />
       <module name="Transport-Service" options="" />
       <module name="User-Service" options="" />
+
     </option>
   </component>
 </project>
