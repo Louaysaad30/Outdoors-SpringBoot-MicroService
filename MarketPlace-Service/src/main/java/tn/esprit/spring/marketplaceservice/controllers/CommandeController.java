@@ -9,6 +9,7 @@ import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import tn.esprit.spring.marketplaceservice.entity.Commande;
+import tn.esprit.spring.marketplaceservice.entity.Status;
 import tn.esprit.spring.marketplaceservice.services.interfaces.ICommandeService;
 
 import java.util.List;
@@ -47,7 +48,7 @@ public class CommandeController {
     }
 
     @GetMapping("/getByUserIdAndStatus/{userId}/{etat}")
-    public List<Commande> getByUserIdAndStatus(@PathVariable Long userId, @PathVariable String etat) {
+    public List<Commande> getByUserIdAndStatus(@PathVariable Long userId, @PathVariable Status etat) {
         return iCommandeService.findByUserIdAndEtat(userId, etat);
     }
 
@@ -62,6 +63,11 @@ public class CommandeController {
         } catch (RuntimeException e) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
         }
+    }
+
+    @GetMapping("/getProductNamesByCommandeId/{commandeId}")
+    public List<String> getProductNamesByCommandeId(@PathVariable Long commandeId) {
+        return iCommandeService.getProductNamesByCommandeId(commandeId);
     }
 
 }

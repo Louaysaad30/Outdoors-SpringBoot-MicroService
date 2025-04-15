@@ -32,8 +32,11 @@ public class Commande {
         String shippingMethod;
         Long AdditionalService;
         Long userId;
-        String etat;
+        @Enumerated(EnumType.STRING)
+        Status etat;
         String OrderNumber;
+
+
 
         @JsonIgnore
         @OneToMany(mappedBy = "commande")
