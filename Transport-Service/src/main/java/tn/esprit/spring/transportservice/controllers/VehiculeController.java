@@ -13,9 +13,8 @@ import org.springframework.web.multipart.MultipartFile;
 import tn.esprit.spring.transportservice.enums.StatutVehicule;
 import tn.esprit.spring.transportservice.enums.TypeVehicule;
 import tn.esprit.spring.transportservice.repository.AgenceRepository;
+import tn.esprit.spring.transportservice.repository.VehiculeRepository;
 import tn.esprit.spring.transportservice.services.interfaces.IVehiculeService;
-
-import java.io.IOException;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -35,6 +34,9 @@ public class VehiculeController {
     private AgenceRepository agenceRepository;
 
     @Autowired
+    private VehiculeRepository vehiculeRepository;
+
+    @Autowired
     public VehiculeController(IVehiculeService vehiculeService) {
         this.vehiculeService = vehiculeService;
     }
@@ -43,6 +45,19 @@ public class VehiculeController {
     public List<Vehicule> getAllVehicules() {
         return vehiculeService.findAll();
     }
+
+    @GetMapping("/agence/{agenceId}/vehicules")
+    public ResponseEntity<List<Vehicule>> getVehiculesByAgence(@PathVariable Long agenceId) {
+        Optional<Agence> agenceOpt = agenceRepository.findById(agenceId);
+        if (agenceOpt.isEmpty()) {
+            return new ResponseEntity<>(HttpStatus.NOT_FOUND);
+        }
+        List<Vehicule> vehicules = vehiculeRepository.findByAgenceId(agenceId);
+        vehicules.forEach(v -> v.setReviews(null));
+
+        return new ResponseEntity<>(vehicules, HttpStatus.OK);
+    }
+
 
     @PostMapping(value = "/add", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     public ResponseEntity<Vehicule> addVehiculeWithImage(
@@ -102,14 +117,61 @@ public class VehiculeController {
     }
 
 
+    @PutMapping(value = "/update/{id}", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    public ResponseEntity<Vehicule> updateVehiculeWithImage(
+            @PathVariable Long id,
+            @RequestParam("modele") String modele,
+            @RequestParam("disponible") boolean disponible,
+            @RequestParam("statut") String statut,
+            @RequestParam("localisation") String localisation,
+            @RequestParam("prixParJour") Double prixParJour,
+            @RequestParam("nbPlace") Integer nbPlace,
+            @RequestParam("rating") Double rating,
+            @RequestParam("agenceId") Long agenceId,
+            @RequestParam("type") String type,
+            @RequestPart(value = "image", required = false) MultipartFile imageFile) {
 
-    @PutMapping("/{id}")
-    public Vehicule updateVehicule(@PathVariable Long id, @RequestBody Vehicule updatedVehicule) {
-        return vehiculeService.update(id, updatedVehicule);
+        try {
+            Optional<Vehicule> existingVehiculeOpt = vehiculeRepository.findById(id);
+            if (existingVehiculeOpt.isEmpty()) {
+                return new ResponseEntity<>(HttpStatus.NOT_FOUND);
+            }
+
+            Optional<Agence> agenceOpt = agenceRepository.findById(agenceId);
+            if (agenceOpt.isEmpty()) {
+                return new ResponseEntity<>(HttpStatus.NOT_FOUND);
+            }
+
+            Vehicule vehicule = existingVehiculeOpt.get();
+            vehicule.setModele(modele);
+            vehicule.setDisponible(disponible);
+            vehicule.setStatut(StatutVehicule.valueOf(statut));
+            vehicule.setLocalisation(localisation);
+            vehicule.setPrixParJour(prixParJour);
+            vehicule.setNbPlace(nbPlace);
+            vehicule.setRating(rating);
+            vehicule.setType(TypeVehicule.valueOf(type.toUpperCase()));
+            vehicule.setAgence(agenceOpt.get());
+
+            if (imageFile != null && !imageFile.isEmpty()) {
+                Map uploadResult = cloudinary.uploader().upload(imageFile.getBytes(), ObjectUtils.emptyMap());
+                String imageUrl = (String) uploadResult.get("secure_url");
+                vehicule.setImage(imageUrl);
+            }
+
+            Vehicule updatedVehicule = vehiculeRepository.save(vehicule);
+            return ResponseEntity.ok(updatedVehicule);
+        } catch (Exception e) {
+            e.printStackTrace();
+            return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
+        }
     }
 
-    @DeleteMapping("/{id}")
-    public void deleteVehicule(@PathVariable Long id) {
+
+    @DeleteMapping("{id}")
+    public ResponseEntity<?> deleteVehicule(@PathVariable Long id) {
         vehiculeService.deleteById(id);
+        return ResponseEntity.ok().build();
     }
+
 }

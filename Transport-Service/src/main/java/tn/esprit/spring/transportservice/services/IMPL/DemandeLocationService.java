@@ -94,4 +94,24 @@ public class DemandeLocationService implements IDemandeLocationService {
     public void deleteById(Long id) {
         demandeLocationRepository.deleteById(id);
     }
+
+
+    public DemandeLocation updateStatut(Long id, DemandeLocation.StatutDemande statut) {
+        DemandeLocation demande = findById(id);
+        demande.setStatut(statut);
+        demande.setCauseRejet(null); // Reset cause if approved
+        return demandeLocationRepository.save(demande);
+    }
+
+    public DemandeLocation rejectDemande(Long id, String cause) {
+        DemandeLocation demande = findById(id);
+        demande.setStatut(DemandeLocation.StatutDemande.REJETÉE);
+        demande.setCauseRejet(cause);
+        return demandeLocationRepository.save(demande);
+    }
+
+    public List<DemandeLocation> getDemandesByAgence(Long agenceId) {
+        return demandeLocationRepository.findByVehiculeAgenceId(agenceId);
+    }
+
 }

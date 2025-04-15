@@ -68,16 +68,37 @@ public class DemandeLocationController {
         }
     }
 
-//    @GetMapping("/check-availability")
-//    public ResponseEntity<Boolean> checkAvailability(@RequestParam Long vehicleId,
-//                                                     @RequestParam String startDate,
-//                                                     @RequestParam String endDate) {
-//        // Convert startDate and endDate to LocalDate or LocalDateTime
-//        LocalDateTime start = LocalDateTime.parse(startDate);
-//        LocalDateTime end = LocalDateTime.parse(endDate);
-//
-//        boolean isAvailable = demandeLocationService.isVehicleAvailable(vehicleId, start, end);
-//        return ResponseEntity.ok(isAvailable);
-//    }
+
+    @PutMapping("/{id}/statut")
+    public ResponseEntity<DemandeLocation> updateStatut(@PathVariable Long id, @RequestParam DemandeLocation.StatutDemande statut) {
+        try {
+            DemandeLocation updated = demandeLocationService.updateStatut(id, statut);
+            return ResponseEntity.ok(updated);
+        } catch (RuntimeException ex) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
+        }
+    }
+
+
+    @PutMapping("/{id}/rejeter")
+    public ResponseEntity<DemandeLocation> rejectDemande(
+            @PathVariable Long id,
+            @RequestParam String cause) {
+        try {
+            DemandeLocation rejected = demandeLocationService.rejectDemande(id, cause);
+            return ResponseEntity.ok(rejected);
+        } catch (RuntimeException ex) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
+        }
+    }
+
+    // Obtenir les demandes d’une agence
+    @GetMapping("/by-agence/{agenceId}")
+    public ResponseEntity<List<DemandeLocation>> getDemandesByAgence(@PathVariable Long agenceId) {
+        List<DemandeLocation> demandes = demandeLocationService.getDemandesByAgence(agenceId);
+        return ResponseEntity.ok(demandes);
+    }
+
+
 
 }
