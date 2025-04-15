@@ -14,6 +14,7 @@ import tn.esprit.spring.transportservice.enums.StatutVehicule;
 import tn.esprit.spring.transportservice.enums.TypeVehicule;
 import tn.esprit.spring.transportservice.repository.AgenceRepository;
 import tn.esprit.spring.transportservice.repository.VehiculeRepository;
+import tn.esprit.spring.transportservice.services.IMPL.GroqService;
 import tn.esprit.spring.transportservice.services.interfaces.IVehiculeService;
 import java.util.List;
 import java.util.Map;
@@ -35,11 +36,25 @@ public class VehiculeController {
 
     @Autowired
     private VehiculeRepository vehiculeRepository;
+    @Autowired
+    private GroqService groqService;
 
     @Autowired
     public VehiculeController(IVehiculeService vehiculeService) {
         this.vehiculeService = vehiculeService;
     }
+    // 👇 New endpoint to generate a Vehicule JSON object using Groq
+    @PostMapping("/generate")
+    public ResponseEntity<String> generateVehiculeFromGroq(@RequestBody Map<String, String> attributes) {
+        try {
+            String vehiculeJson = groqService.generateVehiculeJson(attributes);
+            return ResponseEntity.ok(vehiculeJson);
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body("Failed to generate vehicule JSON: " + e.getMessage());
+        }
+    }
+
 
     @GetMapping
     public List<Vehicule> getAllVehicules() {
@@ -70,6 +85,8 @@ public class VehiculeController {
             @RequestParam("rating") Double rating,
             @RequestParam("agenceId") Long agenceId,
             @RequestParam("type") String type,
+            @RequestParam("description") String description,
+
             @RequestPart(value = "image", required = false) MultipartFile imageFile) {
 
         try {
@@ -93,6 +110,7 @@ public class VehiculeController {
                     .rating(rating)
                     .agence(agence)
                     .type(vehiculeType)
+                    .description(description)
                     .build();
 
             if (imageFile != null && !imageFile.isEmpty()) {
@@ -129,6 +147,7 @@ public class VehiculeController {
             @RequestParam("rating") Double rating,
             @RequestParam("agenceId") Long agenceId,
             @RequestParam("type") String type,
+            @RequestParam("description") String description,
             @RequestPart(value = "image", required = false) MultipartFile imageFile) {
 
         try {
@@ -151,6 +170,7 @@ public class VehiculeController {
             vehicule.setNbPlace(nbPlace);
             vehicule.setRating(rating);
             vehicule.setType(TypeVehicule.valueOf(type.toUpperCase()));
+            vehicule.setDescription(description);
             vehicule.setAgence(agenceOpt.get());
 
             if (imageFile != null && !imageFile.isEmpty()) {

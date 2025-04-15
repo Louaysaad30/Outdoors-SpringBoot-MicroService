@@ -35,6 +35,9 @@ public class Vehicule {
     private Double prixParJour;
     private Integer nbPlace;
 
+    @Column(columnDefinition = "TEXT")
+    private String description;
+
     @Column(nullable = true)
     private Double rating;
 
@@ -50,5 +53,7 @@ public class Vehicule {
     @OneToMany(mappedBy = "vehicule", cascade = CascadeType.ALL, fetch = FetchType.EAGER)
     @JsonManagedReference
     private List<Review> reviews;
+
+
 
 }

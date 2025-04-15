@@ -38,6 +38,7 @@ public class DemandeLocation {
     private Double pickupLatitude;
     private Double pickupLongitude;
 
+
     @Column(length = 255)
     private String causeRejet;
 
