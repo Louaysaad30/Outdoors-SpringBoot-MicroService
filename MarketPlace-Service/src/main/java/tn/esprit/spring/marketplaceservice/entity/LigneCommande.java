@@ -26,11 +26,11 @@ public class LigneCommande {
         @ManyToOne
         Produit produit;
 
-        @JsonIgnore
+
         @ManyToOne
         Commande commande;
 
-        @JsonIgnore
+
         @ManyToOne
         Panier panier;
 
