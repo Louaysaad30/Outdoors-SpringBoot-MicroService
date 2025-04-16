@@ -1,6 +1,8 @@
 package tn.esprit.spring.userservice.Controller;
 
 import lombok.RequiredArgsConstructor;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.http.ResponseEntity;
 import org.springframework.http.HttpStatus;
@@ -23,6 +25,8 @@ import java.util.Optional;
 @RequiredArgsConstructor
 public class ChatController {
 
+    private static final Logger logger = LoggerFactory.getLogger(ChatController.class);
+
     private final SimpMessagingTemplate messagingTemplate;
     private final ChatMessageService chatMessageService;
     private final ChatRoomService chatRoomService;
@@ -35,12 +39,14 @@ public class ChatController {
         try {
             User sender = userService.getUserById(senderId);
             if (sender == null) {
+                logger.error("Sender with ID {} not found.", senderId);
                 return ResponseEntity.status(HttpStatus.NOT_FOUND)
                         .body("User with ID " + senderId + " not found.");
             }
 
             User recipient = userService.getUserById(recipientId);
             if (recipient == null) {
+                logger.error("Recipient with ID {} not found.", recipientId);
                 return ResponseEntity.status(HttpStatus.NOT_FOUND)
                         .body("User with ID " + recipientId + " not found.");
             }
@@ -48,6 +54,7 @@ public class ChatController {
             Long chatId = chatRoomService.createChatId(senderId, recipientId);
             return ResponseEntity.ok(chatId);
         } catch (Exception e) {
+            logger.error("Error creating chat room: {}", e.getMessage(), e);
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
                     .body("Error creating chat room: " + e.getMessage());
         }
@@ -60,35 +67,35 @@ public class ChatController {
         try {
             User sender = userService.getUserById(senderId);
             if (sender == null) {
+                logger.error("Sender with ID {} not found.", senderId);
                 return ResponseEntity.status(HttpStatus.NOT_FOUND)
                         .body("User with ID " + senderId + " not found.");
             }
 
             User recipient = userService.getUserById(recipientId);
             if (recipient == null) {
+                logger.error("Recipient with ID {} not found.", recipientId);
                 return ResponseEntity.status(HttpStatus.NOT_FOUND)
                         .body("User with ID " + recipientId + " not found.");
             }
 
-            // Fetch all chat rooms for the sender (either as sender or recipient)
+            // Fetch all chat rooms for the sender
             List<ChatRoom> rooms = chatRoomService.getChatRoomsByUserId(senderId);
 
             // Check if a chat room exists between sender and recipient
             Optional<ChatRoom> chatRoom = rooms.stream()
-                    .filter(room -> room.getRecipient().equals(recipient)) // Compare User entities
+                    .filter(room -> room.getRecipient().equals(recipient))
                     .findFirst();
 
             if (chatRoom.isPresent()) {
-                // If found, return the chat room's ID
                 return ResponseEntity.ok(chatRoom.get().getId());
             } else {
-                // If no chat room found
                 return ResponseEntity.status(HttpStatus.NOT_FOUND)
                         .body("No chat room exists between the sender and recipient.");
             }
 
         } catch (Exception e) {
-            // Handle any exceptions that may occur
+            logger.error("Error checking chat room: {}", e.getMessage(), e);
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
                     .body("Error checking chat room: " + e.getMessage());
         }
@@ -100,6 +107,7 @@ public class ChatController {
         try {
             User user = userService.getUserById(userId);
             if (user == null) {
+                logger.error("User with ID {} not found.", userId);
                 return ResponseEntity.status(HttpStatus.NOT_FOUND)
                         .body("User with ID " + userId + " not found.");
             }
@@ -113,6 +121,7 @@ public class ChatController {
 
             return ResponseEntity.ok(chatRooms);
         } catch (Exception e) {
+            logger.error("Error retrieving chat rooms: {}", e.getMessage(), e);
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
                     .body("Error retrieving chat rooms: " + e.getMessage());
         }
@@ -125,12 +134,14 @@ public class ChatController {
         try {
             User sender = userService.getUserById(senderId);
             if (sender == null) {
+                logger.error("Sender with ID {} not found.", senderId);
                 return ResponseEntity.status(HttpStatus.NOT_FOUND)
                         .body("User with ID " + senderId + " not found.");
             }
 
             User recipient = userService.getUserById(recipientId);
             if (recipient == null) {
+                logger.error("Recipient with ID {} not found.", recipientId);
                 return ResponseEntity.status(HttpStatus.NOT_FOUND)
                         .body("User with ID " + recipientId + " not found.");
             }
@@ -144,6 +155,7 @@ public class ChatController {
 
             return ResponseEntity.ok(messages);
         } catch (Exception e) {
+            logger.error("Error retrieving messages: {}", e.getMessage(), e);
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
                     .body("Error retrieving messages: " + e.getMessage());
         }
@@ -162,7 +174,39 @@ public class ChatController {
                     saved
             );
         } catch (Exception e) {
-            System.err.println("Error processing chat message: " + e.getMessage());
+            logger.error("Error processing chat message: {}", e.getMessage(), e);
         }
     }
+
+    @GetMapping("/all/{userId}")
+    public ResponseEntity<?> getUsersWithConversations(@PathVariable Long userId) {
+        try {
+            User currentUser = userService.getUserById(userId);
+            if (currentUser == null) {
+                logger.error("User with ID {} not found.", userId);
+                return ResponseEntity.status(HttpStatus.NOT_FOUND)
+                        .body("User with ID " + userId + " not found.");
+            }
+
+            List<ChatRoom> chatRooms = chatRoomService.getChatRoomsByUserId(userId);
+
+            List<User> users = chatRooms.stream()
+                    .map(room -> {
+                        if (room.getSender().getId().equals(userId)) {
+                            return room.getRecipient();
+                        } else {
+                            return room.getSender();
+                        }
+                    })
+                    .distinct()
+                    .toList();
+
+            return ResponseEntity.ok(users);
+        } catch (Exception e) {
+            logger.error("Error retrieving chat partners: {}", e.getMessage(), e);
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body("Error retrieving chat partners: " + e.getMessage());
+        }
+    }
+
 }

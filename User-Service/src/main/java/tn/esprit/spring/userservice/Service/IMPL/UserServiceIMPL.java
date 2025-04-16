@@ -7,6 +7,7 @@ import org.springframework.web.server.ResponseStatusException;
 import tn.esprit.spring.userservice.Entity.User;
 import tn.esprit.spring.userservice.Enum.EmailTemplateName;
 import tn.esprit.spring.userservice.Enum.Etat;
+import tn.esprit.spring.userservice.Repository.ChatMessageRepository;
 import tn.esprit.spring.userservice.Repository.TokenRepository;
 import tn.esprit.spring.userservice.Repository.UserRepository;
 import tn.esprit.spring.userservice.Service.Interface.EmailService;
@@ -25,6 +26,7 @@ public class UserServiceIMPL implements UserService {
     TokenRepository  tokenRepository ;
     private final ICloudinaryService cloudinaryService;
     private final EmailService emailService;
+    ChatMessageRepository chatMessageRepository;
 
 
 
@@ -146,6 +148,9 @@ public class UserServiceIMPL implements UserService {
 
     public List<User> findConnectedUsers() {
         return userRepository.findAllByEtat(Etat.ONLINE);
+    }
+    public List<User> getUsersWithConversations(Long userId) {
+        return chatMessageRepository.findUsersInConversationWith(userId);
     }
 
 }

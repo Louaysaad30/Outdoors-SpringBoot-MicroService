@@ -8,6 +8,7 @@ import tn.esprit.spring.userservice.Repository.ChatRoomRepository;
 import tn.esprit.spring.userservice.Repository.UserRepository;
 import tn.esprit.spring.userservice.Service.Interface.ChatRoomService;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
@@ -42,6 +43,15 @@ public class ChatRoomServiceIMPL implements ChatRoomService {
         return chatRoomRepository.save(chatRoom).getId(); // ✅ use getId()
     }
 
+    @Override
+    public List<ChatRoom> getChatRoomsByUserId(Long userId) {
+        // Get chat rooms where the user is either the sender or recipient
+        List<ChatRoom> chatRooms = chatRoomRepository.findBySenderIdOrRecipientId(userId, userId);
+
+        // Return an empty list if no chat rooms are found
+        return chatRooms != null && !chatRooms.isEmpty() ? chatRooms : new ArrayList<>();
+    }
+
     // Fetch ChatRoom by ID
     @Override
     public Optional<ChatRoom> getChatRoomById(Long id) {
@@ -49,7 +59,11 @@ public class ChatRoomServiceIMPL implements ChatRoomService {
     }
 
     @Override
-    public List<ChatRoom> getChatRoomsByUserId(Long userId) {
-        return chatRoomRepository.findBySenderIdOrRecipientId(userId, userId);
+    public List<ChatRoom> getChatRoomsBetweenUsers(Long userId1, Long userId2) {
+        // Fetch chat rooms where the users are either sender-recipient or recipient-sender
+        List<ChatRoom> chatRooms = chatRoomRepository.findBySenderIdAndRecipientIdOrSenderIdAndRecipientId(userId1, userId2);
+
+        // Return an empty list if no chat rooms are found
+        return chatRooms != null && !chatRooms.isEmpty() ? chatRooms : new ArrayList<>();
     }
 }

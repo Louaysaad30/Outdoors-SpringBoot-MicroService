@@ -38,7 +38,7 @@ public class User  implements UserDetails {
     private String location;
     @Enumerated(EnumType.STRING)
     Etat etat;
-    @ManyToMany
+    @ManyToMany()
     @JsonIgnore
     List<Role> roles;
     boolean accountLocked;
