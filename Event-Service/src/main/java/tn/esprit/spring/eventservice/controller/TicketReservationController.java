@@ -12,7 +12,9 @@ import tn.esprit.spring.eventservice.entity.TicketReservation;
 import tn.esprit.spring.eventservice.repository.TicketRepository;
 import tn.esprit.spring.eventservice.repository.TicketReservationRepository;
 import tn.esprit.spring.eventservice.services.interfaces.ITicketReservationService;
+import tn.esprit.spring.eventservice.services.interfaces.ITicketService;
 
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -26,14 +28,16 @@ public class TicketReservationController {
 
     private final ITicketReservationService reservationService;
     private final TicketRepository ticketRepository;
+    private final ITicketService ticketService;
+@PostMapping
+@Operation(summary = "Reserve a ticket", description = "Creates a new ticket reservation for a user with optional discount code")
+public ResponseEntity<TicketReservation> reserveTicket(@RequestBody Map<String, Object> request) {
+    Long userId = Long.valueOf(request.get("userId").toString());
+    Long ticketId = Long.valueOf(request.get("ticketId").toString());
+    String discountCode = request.get("discountCode") != null ? request.get("discountCode").toString() : null;
 
-    @PostMapping
-    @Operation(summary = "Reserve a ticket", description = "Creates a new ticket reservation for a user")
-    public ResponseEntity<TicketReservation> reserveTicket(@RequestBody Map<String, Long> request) {
-        Long userId = request.get("userId");
-        Long ticketId = request.get("ticketId");
-        return new ResponseEntity<>(reservationService.reserveTicket(userId, ticketId), HttpStatus.CREATED);
-    }
+    return new ResponseEntity<>(reservationService.reserveTicket(userId, ticketId, discountCode), HttpStatus.CREATED);
+}
 
     @GetMapping("/user/{userId}")
     @Operation(summary = "Get user reservations", description = "Retrieves all reservations for a specific user")
@@ -87,5 +91,7 @@ public class TicketReservationController {
                 "limit", ticket.getPurchaseLimit() != null ? ticket.getPurchaseLimit() : "unlimited"
         ));
     }
+
+
 
 }

@@ -29,4 +29,7 @@ public class TicketReservation {
     private Ticket ticket;
 
 
+    private String appliedDiscountCode;
+    private Double finalPrice;
+
 }

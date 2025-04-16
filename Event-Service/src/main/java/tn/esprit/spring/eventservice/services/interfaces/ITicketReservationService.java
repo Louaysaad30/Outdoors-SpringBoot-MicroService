@@ -5,7 +5,7 @@ import java.util.List;
 import java.util.Optional;
 
 public interface ITicketReservationService {
-    TicketReservation reserveTicket(Long userId, Long ticketId);
+    TicketReservation reserveTicket(Long userId, Long ticketId, String discountCode);
     List<TicketReservation> getUserReservations(Long userId);
     List<TicketReservation> getTicketReservations(Long ticketId);
     List<TicketReservation> getEventReservations(Long eventId);

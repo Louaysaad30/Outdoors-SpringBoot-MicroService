@@ -12,7 +12,9 @@ import org.springframework.web.bind.annotation.*;
 import tn.esprit.spring.eventservice.entity.Ticket;
 import tn.esprit.spring.eventservice.services.IMPL.TicketServiceImpl;
 
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 @CrossOrigin(origins = "*")
 @RestController
@@ -104,4 +106,35 @@ public class TicketController {
             @PathVariable Long eventId) {
         return new ResponseEntity<>(ticketService.getTicketsByEventId(eventId), HttpStatus.OK);
     }
+
+
+    @PostMapping("/{id}/discount")
+    @Operation(summary = "Apply discount to ticket", description = "Sets a custom discount percentage for a ticket")
+    public ResponseEntity<Ticket> applyDiscount(
+            @PathVariable Long id,
+            @RequestBody Map<String, Object> discountRequest) {
+
+        String code = (String) discountRequest.get("code");
+        Double percentage = Double.valueOf(discountRequest.get("percentage").toString());
+
+        return ResponseEntity.ok(ticketService.applyDiscount(id, code, percentage));
+    }
+
+/*    @GetMapping("/{id}/price")
+    @Operation(summary = "Get effective ticket price", description = "Returns the price after applying any discount")
+    public ResponseEntity<Map<String, Object>> getEffectivePrice(@PathVariable Long id) {
+        return ticketService.getTicketById(id)
+                .map(ticket -> {
+                    Double originalPrice = ticket.getPrice();
+                    Double discountedPrice = ticketService.calculateDiscountedPrice(ticket);
+
+                    Map<String, Object> response = new HashMap<>();
+                    response.put("originalPrice", originalPrice);
+                    response.put("discountedPrice", discountedPrice);
+                    response.put("discountCode", ticket.getDiscountCode());
+
+                    return ResponseEntity.ok(response);
+                })
+                .orElse(new ResponseEntity<>(HttpStatus.NOT_FOUND));
+    }*/
 }
