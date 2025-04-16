@@ -32,7 +32,8 @@
       <profile name="Annotation profile for Formation-Service" enabled="true">
       </profile>
       <profile name="Annotation profile for MarketPlace-Service" enabled="true">
-
+      </profile>
+      <profile name="Annotation profile for Forum-Service" enabled="true">
         <sourceOutputDir name="target/generated-sources/annotations" />
         <sourceTestOutputDir name="target/generated-test-sources/test-annotations" />
         <outputRelativeToContentRoot value="true" />
@@ -56,19 +57,14 @@
         <module name="Camping-Service" />
 
 
+
       </profile>
     </annotationProcessing>
   </component>
   <component name="JavacSettings">
     <option name="ADDITIONAL_OPTIONS_OVERRIDE">
       <module name="Camping-Service" options="-parameters" />
-      <module name="Eureka-Server" options="-parameters" />
-      <module name="Event-Service" options="-parameters" />
-      <module name="Formation-Service" options="-parameters" />
-      <module name="Forum-Service" options="-parameters" />
-      <module name="MarketPlace-Service" options="-parameters" />
-      <module name="Transport-Service" options="-parameters" />
-      <module name="User-Service" options="-parameters" />
+      <module name="Eureka-Server" options="-parameters" /
 
       <module name="Event-Service" options="" />
       <module name="Formation-Service" options="-parameters" />
@@ -76,6 +72,7 @@
       <module name="MarketPlace-Service" options="" />
       <module name="Transport-Service" options="" />
       <module name="User-Service" options="" />
+
 
     </option>
   </component>
