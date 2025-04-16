@@ -12,6 +12,7 @@ import tn.esprit.spring.userservice.Enum.Etat;
 
 import java.time.LocalDate;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -38,18 +39,23 @@ public class User  implements UserDetails {
     private String location;
     @Enumerated(EnumType.STRING)
     Etat etat;
-    @ManyToMany()
+    @ManyToMany(fetch = FetchType.EAGER)
     @JsonIgnore
     List<Role> roles;
     boolean accountLocked;
     boolean enabled;
     @Override
+@JsonIgnore
     public Collection<? extends GrantedAuthority> getAuthorities() {
-        List<SimpleGrantedAuthority> authorities = roles.stream()
+        if (roles == null) {
+            return Collections.emptyList(); // avoids the NPE
+        }
+
+        return roles.stream()
                 .map(role -> new SimpleGrantedAuthority(role.getRoleType().toString()))
                 .collect(Collectors.toList());
-        return authorities;
     }
+
 
     @Override
     public String getPassword() {

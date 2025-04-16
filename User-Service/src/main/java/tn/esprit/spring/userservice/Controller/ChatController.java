@@ -209,4 +209,27 @@ public class ChatController {
         }
     }
 
+    @PostMapping("/add")
+    public ResponseEntity<?> addChatMessage(@RequestBody ChatMessage chatMessage) {
+        try {
+            System.out.println("🚨 Appel à /add avec message: " + chatMessage.getContent());
+
+            if (chatMessage.getSender() == null || chatMessage.getRecipient() == null) {
+                return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                        .body("Sender or recipient cannot be null.");
+            }
+
+            ChatMessage savedMessage = chatMessageService.save(chatMessage);
+
+            return ResponseEntity.status(HttpStatus.CREATED).body(savedMessage);
+        } catch (RuntimeException e) {
+            logger.error("Error saving message: {}", e.getMessage(), e);
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body("Error saving message: " + e.getMessage());
+        } catch (Exception e) {
+            logger.error("Unexpected error: {}", e.getMessage(), e);
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body("Unexpected error: " + e.getMessage());
+        }
+    }
 }
