@@ -14,6 +14,7 @@ import tn.esprit.spring.eventservice.services.interfaces.IUserServiceClient;
 
 import java.util.List;
 import java.util.Optional;
+import java.util.Random;
 
 @Service
 @RequiredArgsConstructor
@@ -52,6 +53,20 @@ public class TicketReservationServiceImpl implements ITicketReservationService {
                 .userId(userId)
                 .ticket(ticket)
                 .build();
+
+
+// Generate compact reservation code
+        String ticketTypePrefix = ticket.getType().name().substring(0, 1).toUpperCase();
+
+        String compactEntityPart = "R" + userId + ticketTypePrefix + ticket.getEvent().getId() + "T" + ticket.getId();
+
+        String dateTimePart = java.time.LocalDateTime.now().format(
+                java.time.format.DateTimeFormatter.ofPattern("yyMMddHH"));
+
+        String randomPart = String.format("%04X", new Random().nextInt(0xFFFF));
+
+        String reservationCode = String.join("-", compactEntityPart, dateTimePart, randomPart);
+        reservation.setReservationCode(reservationCode);
 
         // Decrement available tickets
         ticket.setAvailableTickets(ticket.getAvailableTickets() - 1);
