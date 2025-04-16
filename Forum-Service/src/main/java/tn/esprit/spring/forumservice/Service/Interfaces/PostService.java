@@ -1,5 +1,6 @@
 package tn.esprit.spring.forumservice.Service.Interfaces;
 
+import org.springframework.web.multipart.MultipartFile;
 import tn.esprit.spring.forumservice.entity.Media;
 import tn.esprit.spring.forumservice.entity.Post;
 
@@ -10,6 +11,7 @@ import java.util.UUID;
 
 public interface PostService {
     Post createPost(Post post);
+
     Post getPostById(UUID id);
     List<Post> getAllPosts();
     Post updatePost(UUID id, Post post);

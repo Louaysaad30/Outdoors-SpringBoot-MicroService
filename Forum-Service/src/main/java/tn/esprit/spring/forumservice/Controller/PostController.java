@@ -10,6 +10,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
+import tn.esprit.spring.forumservice.Service.API.ServiceAPI;
 import tn.esprit.spring.forumservice.Service.Interfaces.MediaService;
 import tn.esprit.spring.forumservice.Service.Interfaces.PostService;
 import tn.esprit.spring.forumservice.entity.Media;
@@ -31,63 +32,122 @@ public class PostController {
     private final PostService postService;
     private final MediaService mediaService;
     private final Cloudinary cloudinary;
+    private final ServiceAPI serviceAPI;
 
-@GetMapping("/all")
-public ResponseEntity<List<Post>> getAllPosts() {
-    List<Post> posts = postService.getAllPosts();
-    return ResponseEntity.ok(posts);
-}
+    @GetMapping("/all")
+    public ResponseEntity<List<Post>> getAllPosts() {
+        List<Post> posts = postService.getAllPosts();
+        return ResponseEntity.ok(posts);
+    }
 
 @PostMapping(value = "/add", consumes = "multipart/form-data")
 public ResponseEntity<?> createPost(@RequestParam("content") String content,
-                                    @RequestParam("userId") Integer userId,
-                                    @RequestParam(value = "mediaFiles", required = false) List<MultipartFile> mediaFiles) {
-
+                                   @RequestParam("userId") Integer userId,
+                                   @RequestParam(value = "mediaFiles", required = false) List<MultipartFile> mediaFiles) {
     try {
+        // First check if content is appropriate
+        if (content != null && !content.isEmpty() && serviceAPI.isContentToxic(content)) {
+            return ResponseEntity.badRequest()
+                    .contentType(org.springframework.http.MediaType.APPLICATION_JSON)
+                    .body(Map.of("message", "TOXIC_CONTENT"));
+        }
+
+        // Create and save post first without media
         Post post = new Post();
         post.setContent(content);
         post.setUserId(userId);
         post.setCreatedAt(java.time.LocalDateTime.now());
+        post.setHasMedia(mediaFiles != null && !mediaFiles.isEmpty());
 
-        // Save the post first to avoid TransientPropertyValueException
+        // Save post first to get an ID
         Post savedPost = postService.createPost(post);
 
+        // Process media files if present
+        List<String> uploadedPublicIds = new ArrayList<>();
+
         if (mediaFiles != null && !mediaFiles.isEmpty()) {
-            List<Media> mediaList = new ArrayList<>();
             for (MultipartFile file : mediaFiles) {
-                Map uploadResult = cloudinary.uploader().upload(file.getBytes(), ObjectUtils.asMap("resource_type", "auto"));
-                String fileUrl = (String) uploadResult.get("url");
+                try {
+                    boolean isAppropriate = true;
 
-                Media media = new Media();
-                media.setMediaUrl(fileUrl);
-                media.setUserId(userId);
-                media.setMediaType(file.getContentType().contains("image") ? MediaType.IMAGE : MediaType.VIDEO);
-                media.setPost(savedPost);
+                    // For images, check appropriateness
+                    if (file.getContentType().contains("image")) {
+                        // Upload temporary image for checking
+                        Map tempUploadResult = cloudinary.uploader().upload(
+                                file.getBytes(),
+                                ObjectUtils.asMap(
+                                        "resource_type", "auto",
+                                        "folder", "temp_moderation"
+                                )
+                        );
 
-                mediaService.saveMedia(media);
-                mediaList.add(media);
+                        String tempUrl = (String) tempUploadResult.get("url");
+                        String tempPublicId = (String) tempUploadResult.get("public_id");
+
+                        // Check if image is appropriate
+                        isAppropriate = serviceAPI.isImageAppropriate(tempUrl);
+
+                        // Delete the temporary image
+                        cloudinary.uploader().destroy(tempPublicId, ObjectUtils.emptyMap());
+
+                        if (!isAppropriate) {
+                            // Clean up files and delete post
+                            for (String publicId : uploadedPublicIds) {
+                                cloudinary.uploader().destroy(publicId, ObjectUtils.emptyMap());
+                            }
+                            postService.deletePost(savedPost.getId());
+
+                            return ResponseEntity.badRequest()
+                                    .contentType(org.springframework.http.MediaType.APPLICATION_JSON)
+                                    .body(Map.of("message", "TOXIC_IMAGE"));
+                        }
+                    }
+
+                    // Upload file to final destination
+                    Map uploadResult = cloudinary.uploader().upload(
+                            file.getBytes(),
+                            ObjectUtils.asMap("resource_type", "auto")
+                    );
+
+                    String fileUrl = (String) uploadResult.get("url");
+                    String publicId = (String) uploadResult.get("public_id");
+                    uploadedPublicIds.add(publicId);
+
+                    // Create and save media with post reference
+                    Media media = new Media();
+                    media.setMediaUrl(fileUrl);
+                    media.setUserId(userId);
+                    media.setMediaType(file.getContentType().contains("image") ?
+                                      MediaType.IMAGE : MediaType.VIDEO);
+                    media.setPost(savedPost);  // Set post reference
+
+                    // Save media directly
+                    mediaService.saveMedia(media);
+
+                } catch (Exception e) {
+                    // Clean up files and delete post on error
+                    for (String publicId : uploadedPublicIds) {
+                        try {
+                            cloudinary.uploader().destroy(publicId, ObjectUtils.emptyMap());
+                        } catch (Exception cleanupError) {
+                            // Continue cleanup
+                        }
+                    }
+                    postService.deletePost(savedPost.getId());
+                    throw e;
+                }
             }
-
-            savedPost.setMedia(mediaList);
-            savedPost.setHasMedia(true);
-            savedPost = postService.createPost(savedPost);
-        } else {
-            savedPost.setHasMedia(false);
         }
 
-        return  ResponseEntity.status(HttpStatus.CREATED)
+        // Get refreshed post with media loaded
+        Post refreshedPost = postService.getPostById(savedPost.getId());
+
+        return ResponseEntity.status(HttpStatus.CREATED)
                 .contentType(org.springframework.http.MediaType.APPLICATION_JSON)
-                .body(savedPost);
-    } catch (RuntimeException e) {
-        if (e.getMessage().contains("inappropriate language")) {
-             return ResponseEntity
-                    .status(HttpStatus.BAD_REQUEST)
-                    .contentType(org.springframework.http.MediaType.APPLICATION_JSON)
-                    .body(Map.of("error", "Message here"));
-        }
-        return new ResponseEntity<>(Map.of("error", "An unexpected error occurred"), HttpStatus.INTERNAL_SERVER_ERROR);
-    } catch (IOException e) {
-        return new ResponseEntity<>(Map.of("error", "Error processing media files"), HttpStatus.INTERNAL_SERVER_ERROR);
+                .body(refreshedPost);
+    } catch (Exception e) {
+        return ResponseEntity.internalServerError()
+                .body(Map.of("error", e.getMessage()));
     }
 }
     @GetMapping("/user/{userId}")
@@ -128,9 +188,26 @@ public ResponseEntity<?> createPost(@RequestParam("content") String content,
         return ResponseEntity.ok(media);
     }
 
-@GetMapping("/top-rated-posts")
-public ResponseEntity<List<Map<String, Object>>> getTopRatedPosts() {
-    List<Map<String, Object>> topRatedPosts = postService.getTopRatedPostsForCurrentMonth(5);
-    return ResponseEntity.ok(topRatedPosts);
-}
+    @GetMapping("/top-rated-posts")
+    public ResponseEntity<List<Map<String, Object>>> getTopRatedPosts() {
+        List<Map<String, Object>> topRatedPosts = postService.getTopRatedPostsForCurrentMonth(5);
+        return ResponseEntity.ok(topRatedPosts);
+    }
+
+    @PostMapping(value = "/image-moderation", consumes = "multipart/form-data")
+    public ResponseEntity<Map<String, Object>> testImageModeration(
+            @RequestParam("image") MultipartFile image) throws IOException {
+
+        // Upload image to get URL
+        Map uploadResult = cloudinary.uploader().upload(image.getBytes(), ObjectUtils.asMap("resource_type", "auto"));
+        String imageUrl = (String) uploadResult.get("url");
+
+        boolean isAppropriate = serviceAPI.isImageAppropriate(imageUrl);
+
+        return ResponseEntity.ok(Map.of(
+                "imageUrl", imageUrl,
+                "isAppropriate", isAppropriate,
+                "status", isAppropriate ? "The image content is appropriate" : "The image contains inappropriate content"
+        ));
+    }
 }

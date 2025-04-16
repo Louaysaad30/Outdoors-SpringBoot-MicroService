@@ -1,21 +1,26 @@
 package tn.esprit.spring.forumservice.Service.IMPL;
 
+           import com.cloudinary.Cloudinary;
+           import com.cloudinary.utils.ObjectUtils;
            import lombok.RequiredArgsConstructor;
            import org.springframework.http.HttpEntity;
            import org.springframework.http.HttpHeaders;
            import org.springframework.stereotype.Service;
            import org.springframework.web.client.RestTemplate;
+           import org.springframework.web.multipart.MultipartFile;
            import tn.esprit.spring.forumservice.Config.PerspectiveApiConfig;
            import tn.esprit.spring.forumservice.Repository.CommentRepository;
            import tn.esprit.spring.forumservice.Repository.MediaRepository;
            import tn.esprit.spring.forumservice.Repository.PostRepository;
            import tn.esprit.spring.forumservice.Repository.ReactionRepository;
+           import tn.esprit.spring.forumservice.Service.API.ServiceAPI;
            import tn.esprit.spring.forumservice.Service.Interfaces.MediaService;
            import tn.esprit.spring.forumservice.Service.Interfaces.PostService;
            import tn.esprit.spring.forumservice.entity.Media;
            import tn.esprit.spring.forumservice.entity.MediaType;
            import tn.esprit.spring.forumservice.entity.Post;
 
+           import java.io.IOException;
            import java.time.LocalDate;
            import java.time.LocalDateTime;
            import java.util.*;
@@ -30,74 +35,23 @@ package tn.esprit.spring.forumservice.Service.IMPL;
            public class PostServiceIMPL implements PostService {
     private final PerspectiveApiConfig perspectiveApiConfig;
     private final RestTemplate restTemplate;
-    private static final float TOXICITY_THRESHOLD = 0.7f;
 
     private final PostRepository postRepository;
                private final MediaService mediaService;
     private final CommentRepository commentRepository;
     private final ReactionRepository reactionRepository;
     private final MediaRepository mediaRepository;
+    private final ServiceAPI serviceAPI;
+    private final Cloudinary cloudinary;
 
 
-    private boolean isContentToxic(String content) {
-        try {
-            if (content == null || content.isEmpty()) {
-                return false;
-            }
 
-            HttpHeaders headers = new HttpHeaders();
-            headers.set("Content-Type", "application/json");
 
-            // Create request body
-            Map<String, Object> requestBody = new HashMap<>();
-            Map<String, Object> comment = new HashMap<>();
-            comment.put("text", content);
-            requestBody.put("comment", comment);
 
-            Map<String, Object> requestedAttributes = new HashMap<>();
-            Map<String, Object> toxicity = new HashMap<>();
-            toxicity.put("scoreThreshold", 0.0);
-            requestedAttributes.put("TOXICITY", toxicity);
-
-            requestBody.put("requestedAttributes", requestedAttributes);
-
-            // Add API key to URL
-            String url = perspectiveApiConfig.getApiUrl() + "?key=" + perspectiveApiConfig.getApiKey();
-
-            HttpEntity<Map<String, Object>> entity = new HttpEntity<>(requestBody, headers);
-
-            // Make API call
-            Map<String, Object> response = restTemplate.postForObject(url, entity, Map.class);
-
-            // Process response
-            if (response != null && response.containsKey("attributeScores")) {
-                Map<String, Object> attributeScores = (Map<String, Object>) response.get("attributeScores");
-                Map<String, Object> toxicityScore = (Map<String, Object>) attributeScores.get("TOXICITY");
-                Map<String, Object> summaryScore = (Map<String, Object>) toxicityScore.get("summaryScore");
-                double score = (double) summaryScore.get("value");
-
-                return score >= TOXICITY_THRESHOLD;
-            }
-
-            return false;
-        } catch (Exception e) {
-            // Log the exception in a real application
-            System.err.println("Error checking content toxicity: " + e.getMessage());
-            return false;
-        }
-    }
-    @Override
+@Override
 public Post createPost(Post post) {
-    // Check content for toxicity
-    if (post.getContent() != null && !post.getContent().isEmpty()) {
-        boolean isToxic = isContentToxic(post.getContent());
-        if (isToxic) {
-            throw new RuntimeException("Post content contains inappropriate language");
-        }
-    }
     return postRepository.save(post);
 }
-
 
 
 
