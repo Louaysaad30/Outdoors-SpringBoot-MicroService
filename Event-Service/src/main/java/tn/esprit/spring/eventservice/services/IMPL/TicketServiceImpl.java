@@ -48,30 +48,29 @@ public class TicketServiceImpl implements ITicketService {
         return ticketRepository.findByEventId(eventId);
     }
 
-// Add these methods to TicketServiceImpl.java
-public Ticket applyDiscount(Long ticketId, String code, Double percentage) {
-    return ticketRepository.findById(ticketId)
-            .map(ticket -> {
-                // Store as "CODE:25" format
-                ticket.setDiscountCode(code + ":" + percentage);
-                return ticketRepository.save(ticket);
-            })
-            .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Ticket not found"));
-}
+    public Ticket applyDiscount(Long ticketId, String code, Double percentage) {
+        return ticketRepository.findById(ticketId)
+                .map(ticket -> {
+                    // Store as "CODE:25" format
+                    ticket.setDiscountCode(code + ":" + percentage);
+                    return ticketRepository.save(ticket);
+                })
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Ticket not found"));
+    }
 
-public Double calculateDiscountedPrice(Ticket ticket) {
-    if (ticket.getDiscountCode() != null && ticket.getDiscountCode().contains(":")) {
-        String[] parts = ticket.getDiscountCode().split(":");
-        if (parts.length == 2) {
-            try {
-                double percentage = Double.parseDouble(parts[1]);
-                return ticket.getPrice() * (1 - percentage / 100.0);
-            } catch (NumberFormatException e) {
-                // Invalid format, return original price
+    public Double calculateDiscountedPrice(Ticket ticket) {
+        if (ticket.getDiscountCode() != null && ticket.getDiscountCode().contains(":")) {
+            String[] parts = ticket.getDiscountCode().split(":");
+            if (parts.length == 2) {
+                try {
+                    double percentage = Double.parseDouble(parts[1]);
+                    return ticket.getPrice() * (1 - percentage / 100.0);
+                } catch (NumberFormatException e) {
+                    // Invalid format, return original price
+                }
             }
         }
+        return ticket.getPrice();
     }
-    return ticket.getPrice();
-}
 
 }

@@ -12,4 +12,5 @@ public interface ITicketReservationService {
     Optional<TicketReservation> getReservationById(Long id);
     void cancelReservation(Long reservationId);
     boolean hasUserReservedTicket(Long userId, Long ticketId);
+    List<TicketReservation> getAllReservations();
 }

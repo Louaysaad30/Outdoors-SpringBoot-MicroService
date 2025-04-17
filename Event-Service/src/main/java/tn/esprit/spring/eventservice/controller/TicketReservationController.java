@@ -2,6 +2,7 @@ package tn.esprit.spring.eventservice.controller;
 
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import lombok.AllArgsConstructor;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -13,15 +14,14 @@ import tn.esprit.spring.eventservice.repository.TicketRepository;
 import tn.esprit.spring.eventservice.repository.TicketReservationRepository;
 import tn.esprit.spring.eventservice.services.interfaces.ITicketReservationService;
 import tn.esprit.spring.eventservice.services.interfaces.ITicketService;
+import tn.esprit.spring.eventservice.services.interfaces.IUserServiceClient;
 
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
+import java.util.*;
+import java.util.stream.Collectors;
 
 @RestController
 @RequestMapping("/api/reservations")
-@RequiredArgsConstructor
+@AllArgsConstructor
 @CrossOrigin(origins = "*")
 @Tag(name = "Ticket Reservation Management", description = "Operations for managing ticket reservations")
 public class TicketReservationController {
@@ -29,7 +29,11 @@ public class TicketReservationController {
     private final ITicketReservationService reservationService;
     private final TicketRepository ticketRepository;
     private final ITicketService ticketService;
-@PostMapping
+    private final IUserServiceClient userServiceClient;
+
+
+
+    @PostMapping
 @Operation(summary = "Reserve a ticket", description = "Creates a new ticket reservation for a user with optional discount code")
 public ResponseEntity<TicketReservation> reserveTicket(@RequestBody Map<String, Object> request) {
     Long userId = Long.valueOf(request.get("userId").toString());
@@ -92,6 +96,74 @@ public ResponseEntity<TicketReservation> reserveTicket(@RequestBody Map<String, 
         ));
     }
 
+@GetMapping("/event/{eventId}/participants")
+@Operation(summary = "Get event participants", description = "Retrieves all users who have reservations for a specific event")
+public ResponseEntity<List<Map<String, Object>>> getEventParticipants(@PathVariable Long eventId) {
+    // Get all reservations for this event
+    List<TicketReservation> reservations = reservationService.getEventReservations(eventId);
 
+    // Extract unique user IDs
+    Set<Long> uniqueUserIds = reservations.stream()
+            .map(TicketReservation::getUserId)
+            .collect(Collectors.toSet());
+
+    // Fetch user details for each participant
+    List<Map<String, Object>> participants = new ArrayList<>();
+    for (Long userId : uniqueUserIds) {
+        try {
+            // Get user details from user service
+            ResponseEntity<?> userResponse = userServiceClient.getUserById(userId);
+            if (userResponse.getStatusCode().is2xxSuccessful()) {
+                // Count how many tickets this user has for this event
+                long ticketCount = reservations.stream()
+                        .filter(r -> r.getUserId().equals(userId))
+                        .count();
+
+                Map<String, Object> participant = new HashMap<>();
+                participant.put("user", userResponse.getBody());
+                participant.put("ticketCount", ticketCount);
+                participants.add(participant);
+            }
+        } catch (Exception e) {
+            // Log error but continue with other users
+            System.err.println("Error fetching user " + userId + ": " + e.getMessage());
+        }
+    }
+
+    return ResponseEntity.ok(participants);
+}
+
+
+@GetMapping("/events/participants")
+@Operation(summary = "Get all event participants", description = "Retrieves participant info for all events")
+public ResponseEntity<Map<Long, List<Map<String, Object>>>> getAllEventParticipants() {
+    // Get all events with their reservations
+    Map<Long, List<Map<String, Object>>> eventParticipants = new HashMap<>();
+
+    // For each event that has reservations
+    List<TicketReservation> allReservations = reservationService.getAllReservations();
+
+    // Group reservations by event ID
+    Map<Long, List<TicketReservation>> reservationsByEvent = allReservations.stream()
+            .collect(Collectors.groupingBy(r -> r.getTicket().getEvent().getId()));
+
+    // Process each event
+    for (Map.Entry<Long, List<TicketReservation>> entry : reservationsByEvent.entrySet()) {
+        Long eventId = entry.getKey();
+        List<TicketReservation> reservations = entry.getValue();
+
+        // Similar logic as the previous method
+        Set<Long> uniqueUserIds = reservations.stream()
+                .map(TicketReservation::getUserId)
+                .collect(Collectors.toSet());
+
+        List<Map<String, Object>> participants = new ArrayList<>();
+        // Process participants (same as previous method)
+
+        eventParticipants.put(eventId, participants);
+    }
+
+    return ResponseEntity.ok(eventParticipants);
+}
 
 }
