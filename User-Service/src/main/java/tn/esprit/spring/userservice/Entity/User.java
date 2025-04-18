@@ -45,7 +45,7 @@ public class User  implements UserDetails {
     boolean accountLocked;
     boolean enabled;
     @Override
-@JsonIgnore
+    //@JsonIgnore
     public Collection<? extends GrantedAuthority> getAuthorities() {
         if (roles == null) {
             return Collections.emptyList(); // avoids the NPE

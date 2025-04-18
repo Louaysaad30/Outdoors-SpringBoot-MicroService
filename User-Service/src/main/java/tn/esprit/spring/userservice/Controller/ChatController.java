@@ -3,6 +3,7 @@ package tn.esprit.spring.userservice.Controller;
 import lombok.RequiredArgsConstructor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.messaging.handler.annotation.SendTo;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.http.ResponseEntity;
 import org.springframework.http.HttpStatus;
@@ -14,10 +15,9 @@ import tn.esprit.spring.userservice.Entity.User;
 import tn.esprit.spring.userservice.Service.Interface.ChatMessageService;
 import tn.esprit.spring.userservice.Service.Interface.ChatRoomService;
 import tn.esprit.spring.userservice.Service.Interface.UserService;
+import tn.esprit.spring.userservice.dto.Request.ChatMessageDTO;
 
-import java.util.Date;
-import java.util.List;
-import java.util.Optional;
+import java.util.*;
 
 @RestController
 @RequestMapping("/ws")
@@ -163,16 +163,32 @@ public class ChatController {
 
     // WebSocket message handler
     @MessageMapping("/chat")
-    public void processMessage(ChatMessage chatMessage) {
+    public void processMessage(ChatMessageDTO chatMessageDTO) {
         try {
+            // Create and populate ChatMessage entity
+            ChatMessage chatMessage = new ChatMessage();
+            chatMessage.setContent(chatMessageDTO.getContent());
+            chatMessage.setSender(userService.getUserById(chatMessageDTO.getSender()));
+            chatMessage.setRecipient(userService.getUserById(chatMessageDTO.getRecipient()));
             chatMessage.setTimestamp(new Date());
+
+            // Save the message
             ChatMessage saved = chatMessageService.save(chatMessage);
 
-            messagingTemplate.convertAndSendToUser(
-                    String.valueOf(chatMessage.getRecipient().getId()),
-                    "/queue/messages",
-                    saved
+            // Send message to sender and recipient (only once if it's the same user)
+            Set<Long> userIds = new HashSet<>(Arrays.asList(
+                    chatMessageDTO.getSender(), chatMessageDTO.getRecipient()
+            ));
+            userIds.forEach(userId ->
+                    messagingTemplate.convertAndSendToUser(
+                            String.valueOf(userId), "/queue/messages", saved
+                    )
             );
+//console.log("Message sent to users: " + userIds);
+
+            // Send message to all subscribers
+            messagingTemplate.convertAndSend("/queue/messages", saved);
+            logger.info("Message sent to users: {}", userIds);
         } catch (Exception e) {
             logger.error("Error processing chat message: {}", e.getMessage(), e);
         }
