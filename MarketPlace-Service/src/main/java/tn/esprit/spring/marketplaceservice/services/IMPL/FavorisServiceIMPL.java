@@ -40,6 +40,11 @@ public class FavorisServiceIMPL implements IFavorisService {
         return favorisRepository.save(favoris);
     }
 
+    @Override
+    public List<Favoris> retrieveFavorisByUserId(Long userId) {
+        return favorisRepository.findByIdUser(userId);
+    }
+
 
 
 

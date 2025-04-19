@@ -41,4 +41,9 @@ public class FavorisController {
     public void removeFavoris(@PathVariable long idFavoris) {
         iFavorisService.removeFavoris(idFavoris);
     }
+
+    @GetMapping("/getByUserId/{userId}")
+    public List<Favoris> retrieveFavorisByUserId(@PathVariable Long userId) {
+        return iFavorisService.retrieveFavorisByUserId(userId);
+    }
 }
