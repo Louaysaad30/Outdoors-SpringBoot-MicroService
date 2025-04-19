@@ -5,6 +5,8 @@ import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.server.ResponseStatusException;
+import tn.esprit.spring.eventservice.entity.Event;
+import tn.esprit.spring.eventservice.entity.Status;
 import tn.esprit.spring.eventservice.entity.Ticket;
 import tn.esprit.spring.eventservice.entity.TicketReservation;
 import tn.esprit.spring.eventservice.repository.TicketRepository;
@@ -12,6 +14,7 @@ import tn.esprit.spring.eventservice.repository.TicketReservationRepository;
 import tn.esprit.spring.eventservice.services.interfaces.ITicketReservationService;
 import tn.esprit.spring.eventservice.services.interfaces.IUserServiceClient;
 
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
 import java.util.Random;
@@ -49,6 +52,21 @@ public class TicketReservationServiceImpl implements ITicketReservationService {
         // Check if ticket is available
         if (ticket.getAvailableTickets() <= 0) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "No tickets available");
+        }
+
+
+        // Check event status and date
+        Event event = ticket.getEvent();
+        LocalDateTime now = LocalDateTime.now();
+
+        if (event.getStatus() == Status.CANCELED) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
+                    "Cannot reserve tickets for canceled events");
+        }
+
+        if (event.getStatus() == Status.FINISHED || now.isAfter(event.getEndDate())) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
+                    "Cannot reserve tickets for finished events");
         }
 
         // Check purchase limit

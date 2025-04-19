@@ -49,17 +49,45 @@ public ResponseEntity<TicketReservation> reserveTicket(@RequestBody Map<String, 
         return ResponseEntity.ok(reservationService.getUserReservations(userId));
     }
 
-    @GetMapping("/ticket/{ticketId}")
-    @Operation(summary = "Get ticket reservations", description = "Retrieves all reservations for a specific ticket")
-    public ResponseEntity<List<TicketReservation>> getTicketReservations(@PathVariable Long ticketId) {
-        return ResponseEntity.ok(reservationService.getTicketReservations(ticketId));
+@GetMapping("/ticket/{ticketId}")
+@Operation(summary = "Get ticket reservations", description = "Retrieves all reservations for a specific ticket with user details")
+public ResponseEntity<List<Map<String, Object>>> getTicketReservations(@PathVariable Long ticketId) {
+    // Get all reservations for this ticket
+    List<TicketReservation> reservations = reservationService.getTicketReservations(ticketId);
+
+    // Create enhanced response with user details
+    List<Map<String, Object>> enhancedReservations = new ArrayList<>();
+
+    for (TicketReservation reservation : reservations) {
+        Map<String, Object> reservationData = new HashMap<>();
+        reservationData.put("reservation", reservation);
+
+        // Fetch user details
+        try {
+            ResponseEntity<?> userResponse = userServiceClient.getUserById(reservation.getUserId());
+            if (userResponse.getStatusCode().is2xxSuccessful()) {
+                reservationData.put("user", userResponse.getBody());
+            } else {
+                reservationData.put("user", Map.of("error", "User not found", "userId", reservation.getUserId()));
+            }
+        } catch (Exception e) {
+            reservationData.put("user", Map.of(
+                "error", "Failed to retrieve user data",
+                "userId", reservation.getUserId(),
+                "message", e.getMessage()
+            ));
+        }
+
+        enhancedReservations.add(reservationData);
     }
 
-    @GetMapping("/event/{eventId}")
+    return ResponseEntity.ok(enhancedReservations);
+}
+/*    @GetMapping("/event/{eventId}")
     @Operation(summary = "Get event reservations", description = "Retrieves all reservations for a specific event")
     public ResponseEntity<List<TicketReservation>> getEventReservations(@PathVariable Long eventId) {
         return ResponseEntity.ok(reservationService.getEventReservations(eventId));
-    }
+    }*/
 
     @DeleteMapping("/{id}")
     @Operation(summary = "Cancel reservation", description = "Cancels a ticket reservation and returns the ticket to inventory")
@@ -133,7 +161,7 @@ public ResponseEntity<List<Map<String, Object>>> getEventParticipants(@PathVaria
     return ResponseEntity.ok(participants);
 }
 
-
+/*
 @GetMapping("/events/participants")
 @Operation(summary = "Get all event participants", description = "Retrieves participant info for all events")
 public ResponseEntity<Map<Long, List<Map<String, Object>>>> getAllEventParticipants() {
@@ -152,18 +180,51 @@ public ResponseEntity<Map<Long, List<Map<String, Object>>>> getAllEventParticipa
         Long eventId = entry.getKey();
         List<TicketReservation> reservations = entry.getValue();
 
-        // Similar logic as the previous method
+        // Get unique users for this event
         Set<Long> uniqueUserIds = reservations.stream()
                 .map(TicketReservation::getUserId)
                 .collect(Collectors.toSet());
 
         List<Map<String, Object>> participants = new ArrayList<>();
-        // Process participants (same as previous method)
+
+        // Process each participant
+        for (Long userId : uniqueUserIds) {
+            try {
+                // Count tickets for this user at this event
+                long ticketCount = reservations.stream()
+                        .filter(r -> r.getUserId().equals(userId))
+                        .count();
+
+                // Get user details from user service
+                ResponseEntity<?> userResponse = userServiceClient.getUserById(userId);
+
+                // Create participant entry with user data
+                Map<String, Object> participant = new HashMap<>();
+                participant.put("userId", userId);
+                participant.put("ticketCount", ticketCount);
+
+                // Add user data if available
+                if (userResponse.getStatusCode().is2xxSuccessful() && userResponse.getBody() != null) {
+                    participant.put("userData", userResponse.getBody());
+                } else {
+                    participant.put("userData", Map.of("message", "User details not available"));
+                }
+
+                participants.add(participant);
+            } catch (Exception e) {
+                // Add entry with error info
+                Map<String, Object> errorParticipant = new HashMap<>();
+                errorParticipant.put("userId", userId);
+                errorParticipant.put("error", "Failed to retrieve user data: " + e.getMessage());
+                participants.add(errorParticipant);
+            }
+        }
 
         eventParticipants.put(eventId, participants);
     }
 
     return ResponseEntity.ok(eventParticipants);
 }
+*/
 
 }
