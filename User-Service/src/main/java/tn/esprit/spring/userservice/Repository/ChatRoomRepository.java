@@ -2,6 +2,7 @@ package tn.esprit.spring.userservice.Repository;
 
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
 import tn.esprit.spring.userservice.Entity.ChatRoom;
 
 import java.util.List;
@@ -12,8 +13,7 @@ public interface ChatRoomRepository extends JpaRepository<ChatRoom, Long> {
 
     List<ChatRoom> findBySenderIdOrRecipientId(Long senderId, Long recipientId);
 
-    @Query("SELECT c FROM ChatRoom c WHERE (c.sender.id = :userId AND c.recipient.id = :userId2) OR (c.sender.id = :userId2 AND c.recipient.id = :userId)")
-    List<ChatRoom> findBySenderIdAndRecipientIdOrSenderIdAndRecipientId(Long userId, Long userId2);
-
+    @Query("SELECT c FROM ChatRoom c WHERE (c.sender.id = :userId1 AND c.recipient.id = :userId2) OR (c.sender.id = :userId2 AND c.recipient.id = :userId1)")
+    List<ChatRoom> findBySenderIdAndRecipientIdOrSenderIdAndRecipientId(@Param("userId1") Long userId1, @Param("userId2") Long userId2);
 
 }

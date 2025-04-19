@@ -70,21 +70,10 @@ public class ChatMessageServiceIMPL implements ChatMessageService {
     }
 
     @Override
-    public List<ChatMessage> findChatMessages(Long senderId, Long recipientId) {
-        try {
-            // Try to fetch the chat room for sender -> recipient
-            Optional<ChatRoom> chatRoomOpt = chatRoomRepository.findBySenderIdAndRecipientId(senderId, recipientId);
-
-            // If no chat room found, check the opposite direction (recipient -> sender)
-            if (!chatRoomOpt.isPresent()) {
-                chatRoomOpt = chatRoomRepository.findBySenderIdAndRecipientId(recipientId, senderId);
-            }
-
-            // If a chat room is found, fetch the messages for that room
-            return chatRoomOpt.map(room -> repository.findByChatRoom_Id(room.getId())) // Correct method name
-                    .orElse(new ArrayList<>());
-        } catch (Exception e) {
-            throw new RuntimeException("Failed to retrieve chat messages: " + e.getMessage(), e);
-        }
+    public List<ChatMessage> findChatMessagesBetween(Long senderId, Long recipientId) {
+        return repository.findChatMessagesBetween(senderId, recipientId);
     }
+
+
+
 }

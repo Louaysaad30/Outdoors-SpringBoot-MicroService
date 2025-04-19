@@ -12,12 +12,15 @@ import org.springframework.messaging.simp.SimpMessagingTemplate;
 import tn.esprit.spring.userservice.Entity.ChatMessage;
 import tn.esprit.spring.userservice.Entity.ChatRoom;
 import tn.esprit.spring.userservice.Entity.User;
+import tn.esprit.spring.userservice.Enum.Etat;
 import tn.esprit.spring.userservice.Service.Interface.ChatMessageService;
 import tn.esprit.spring.userservice.Service.Interface.ChatRoomService;
 import tn.esprit.spring.userservice.Service.Interface.UserService;
 import tn.esprit.spring.userservice.dto.Request.ChatMessageDTO;
 
+import java.security.Principal;
 import java.util.*;
+import java.util.concurrent.ConcurrentHashMap;
 
 @RestController
 @RequestMapping("/ws")
@@ -26,6 +29,7 @@ import java.util.*;
 public class ChatController {
 
     private static final Logger logger = LoggerFactory.getLogger(ChatController.class);
+    private static Set<Long> connectedUserIds = ConcurrentHashMap.newKeySet();
 
     private final SimpMessagingTemplate messagingTemplate;
     private final ChatMessageService chatMessageService;
@@ -66,36 +70,23 @@ public class ChatController {
                                            @RequestParam Long recipientId) {
         try {
             User sender = userService.getUserById(senderId);
-            if (sender == null) {
-                logger.error("Sender with ID {} not found.", senderId);
-                return ResponseEntity.status(HttpStatus.NOT_FOUND)
-                        .body("User with ID " + senderId + " not found.");
-            }
-
             User recipient = userService.getUserById(recipientId);
-            if (recipient == null) {
-                logger.error("Recipient with ID {} not found.", recipientId);
-                return ResponseEntity.status(HttpStatus.NOT_FOUND)
-                        .body("User with ID " + recipientId + " not found.");
+
+            if (sender == null || recipient == null) {
+                return ResponseEntity.status(HttpStatus.NOT_FOUND).body("One or both users not found.");
             }
 
-            // Fetch all chat rooms for the sender
-            List<ChatRoom> rooms = chatRoomService.getChatRoomsByUserId(senderId);
+            List<ChatRoom> chatRooms = chatRoomService.getChatRoomsBetweenUsers(senderId, recipientId);
 
-            // Check if a chat room exists between sender and recipient
-            Optional<ChatRoom> chatRoom = rooms.stream()
-                    .filter(room -> room.getRecipient().equals(recipient))
-                    .findFirst();
-
-            if (chatRoom.isPresent()) {
-                return ResponseEntity.ok(chatRoom.get().getId());
+            if (!chatRooms.isEmpty()) {
+                // Return the first chat room ID found
+                return ResponseEntity.ok(chatRooms.get(0).getId());
             } else {
                 return ResponseEntity.status(HttpStatus.NOT_FOUND)
-                        .body("No chat room exists between the sender and recipient.");
+                        .body("No chat room exists between the users.");
             }
 
         } catch (Exception e) {
-            logger.error("Error checking chat room: {}", e.getMessage(), e);
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
                     .body("Error checking chat room: " + e.getMessage());
         }
@@ -133,29 +124,35 @@ public class ChatController {
                                               @PathVariable Long recipientId) {
         try {
             User sender = userService.getUserById(senderId);
-            if (sender == null) {
-                logger.error("Sender with ID {} not found.", senderId);
-                return ResponseEntity.status(HttpStatus.NOT_FOUND)
-                        .body("User with ID " + senderId + " not found.");
-            }
-
             User recipient = userService.getUserById(recipientId);
-            if (recipient == null) {
-                logger.error("Recipient with ID {} not found.", recipientId);
+
+            if (sender == null || recipient == null) {
+                String missingUser = (sender == null) ? "Sender" : "Recipient";
+                Long missingId = (sender == null) ? senderId : recipientId;
+
+                logger.error("{} with ID {} not found.", missingUser, missingId);
                 return ResponseEntity.status(HttpStatus.NOT_FOUND)
-                        .body("User with ID " + recipientId + " not found.");
+                        .body(missingUser + " with ID " + missingId + " not found.");
             }
 
-            List<ChatMessage> messages = chatMessageService.findChatMessages(senderId, recipientId);
+            List<ChatMessage> messages = chatMessageService.findChatMessagesBetween(senderId, recipientId);
 
-            if (messages.isEmpty()) {
-                return ResponseEntity.status(HttpStatus.NO_CONTENT)
-                        .body("No messages found between the sender and recipient.");
-            }
+            // Convert to DTOs
+            List<ChatMessageDTO> response = messages.stream()
+                    .map(msg -> new ChatMessageDTO(
+                            msg.getId(),
+                            msg.getContent(),
+                            msg.getSender().getId(),
+                            msg.getRecipient().getId(),
+                            msg.getTimestamp()
+                    ))
+                    .toList();
 
-            return ResponseEntity.ok(messages);
+
+            return ResponseEntity.ok(response);
+
         } catch (Exception e) {
-            logger.error("Error retrieving messages: {}", e.getMessage(), e);
+            logger.error("Error retrieving messages between {} and {}: {}", senderId, recipientId, e.getMessage(), e);
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
                     .body("Error retrieving messages: " + e.getMessage());
         }
@@ -181,17 +178,32 @@ public class ChatController {
             ));
             userIds.forEach(userId ->
                     messagingTemplate.convertAndSendToUser(
-                            String.valueOf(userId), "/queue/messages", saved
+                            String.valueOf(userId), "/queue/messages", chatMessage
                     )
             );
-//console.log("Message sent to users: " + userIds);
 
             // Send message to all subscribers
-            messagingTemplate.convertAndSend("/queue/messages", saved);
+            messagingTemplate.convertAndSend("/queue/messages", chatMessage);
             logger.info("Message sent to users: {}", userIds);
         } catch (Exception e) {
             logger.error("Error processing chat message: {}", e.getMessage(), e);
         }
+    }
+    @MessageMapping("/user.online")
+    public void userConnected(Map<String, Object> payload, Principal principal) {
+        Long userId = Long.parseLong(String.valueOf(payload.get("userId")));
+
+        // Add user to memory set
+        connectedUserIds.add(userId);
+
+        // 🟢 Set user status to ONLINE in DB
+        User user = userService.getUserById(userId);
+        user.setEtat(Etat.ONLINE);
+        userService.saveUser(user);
+
+        // Broadcast updated user list
+        List<User> connectedUsers = userService.findConnectedUsers();
+        messagingTemplate.convertAndSend("/topic/connected-users", connectedUsers);
     }
 
     @GetMapping("/all/{userId}")

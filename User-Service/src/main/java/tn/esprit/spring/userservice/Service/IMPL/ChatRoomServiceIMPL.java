@@ -60,10 +60,7 @@ public class ChatRoomServiceIMPL implements ChatRoomService {
 
     @Override
     public List<ChatRoom> getChatRoomsBetweenUsers(Long userId1, Long userId2) {
-        // Fetch chat rooms where the users are either sender-recipient or recipient-sender
-        List<ChatRoom> chatRooms = chatRoomRepository.findBySenderIdAndRecipientIdOrSenderIdAndRecipientId(userId1, userId2);
-
-        // Return an empty list if no chat rooms are found
-        return chatRooms != null && !chatRooms.isEmpty() ? chatRooms : new ArrayList<>();
+        return chatRoomRepository.findBySenderIdAndRecipientIdOrSenderIdAndRecipientId(userId1, userId2);
     }
+
 }

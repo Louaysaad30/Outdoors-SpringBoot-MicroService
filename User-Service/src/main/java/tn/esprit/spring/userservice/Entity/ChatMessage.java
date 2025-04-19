@@ -1,5 +1,7 @@
 package tn.esprit.spring.userservice.Entity;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonManagedReference;
 import jakarta.persistence.*;
 import lombok.*;
 
@@ -20,16 +22,19 @@ public class ChatMessage {
     // Relate the ChatMessage to a specific ChatRoom
     @ManyToOne
     @JoinColumn(name = "chat_room_id", referencedColumnName = "id")
+    @JsonIgnore
     private ChatRoom chatRoom;
 
     // Relate the sender to the User entity
     @ManyToOne
     @JoinColumn(name = "sender_id", referencedColumnName = "id")
+    @JsonIgnore
     private User sender;
 
     // Relate the recipient to the User entity
     @ManyToOne
     @JoinColumn(name = "recipient_id", referencedColumnName = "id")
+    @JsonIgnore
     private User recipient;
 
     private String content;
