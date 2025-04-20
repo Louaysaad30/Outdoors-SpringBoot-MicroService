@@ -9,6 +9,8 @@ import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.server.ResponseStatusException;
 import tn.esprit.spring.userservice.Entity.User;
 import org.springframework.http.HttpStatus;
+import tn.esprit.spring.userservice.Enum.EmailTemplateName;
+import tn.esprit.spring.userservice.Service.Interface.EmailService;
 import tn.esprit.spring.userservice.Service.Interface.UserService;
 import tn.esprit.spring.userservice.dto.Request.UserUpdateRequest;
 
@@ -21,6 +23,7 @@ import java.util.Map;
 @AllArgsConstructor
 public class UserController {
     private UserService userService;
+    private EmailService emailService;
 
     @GetMapping("/email/{email}")
     public ResponseEntity<?> getUserByEmail(@PathVariable String email) {
@@ -52,6 +55,28 @@ public class UserController {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body("User not found with ID: " + id);
         }
     }
+    @PutMapping("/block-fail-by-email")
+    public ResponseEntity<?> blockUserFailedByEmail(@RequestBody Map<String, String> request) {
+        String email = request.get("email");
+
+        try {
+            User user = userService.getUserByEmail(email);
+            if (user == null) {
+                return ResponseEntity.status(HttpStatus.NOT_FOUND).body("User not found with email: " + email);
+            }
+
+            userService.blockUser(user.getId(), false); // false = block
+            emailService.sendEmail(user.getEmail(), user.fullName(), EmailTemplateName.FAIL, "", "", "");
+
+            return ResponseEntity.ok(Map.of("message", "User blocked successfully."));
+
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body("An error occurred while blocking the user: " + e.getMessage());
+        }
+    }
+
+
 
     @PutMapping("/unblock/{id}")
     public ResponseEntity<?> unblockUser(@PathVariable Long id) {
