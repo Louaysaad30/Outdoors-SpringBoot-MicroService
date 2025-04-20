@@ -43,7 +43,7 @@ public class ChatMessageServiceIMPL implements ChatMessageService {
 
             chatMessage.setSender(sender);
             chatMessage.setRecipient(recipient);
-
+            chatMessage.setRead(false); // Default to unread
             // Search for an existing ChatRoom
             Optional<ChatRoom> chatRoomOptional = chatRoomRepository
                     .findBySenderIdAndRecipientIdOrSenderIdAndRecipientId(
@@ -73,7 +73,15 @@ public class ChatMessageServiceIMPL implements ChatMessageService {
     public List<ChatMessage> findChatMessagesBetween(Long senderId, Long recipientId) {
         return repository.findChatMessagesBetween(senderId, recipientId);
     }
-
-
+    public void markMessageAsRead(Long messageId) {
+        ChatMessage message = repository.findById(messageId)
+                .orElseThrow(() -> new RuntimeException("Message not found"));
+        message.setRead(true);
+        repository.save(message);
+    }
+    @Override
+    public List<ChatMessage> findMessagesByChatRoomId(Long chatRoomId) {
+        return chatRoomRepository.findByChatRoomIdOrderByTimestampAsc(chatRoomId);
+    }
 
 }

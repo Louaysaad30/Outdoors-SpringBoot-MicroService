@@ -3,10 +3,13 @@ package tn.esprit.spring.userservice.Service.IMPL;
 import jakarta.mail.MessagingException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.http.HttpStatus;
+import org.springframework.http.*;
 import org.springframework.security.authentication.*;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+import org.springframework.util.LinkedMultiValueMap;
+import org.springframework.util.MultiValueMap;
+import org.springframework.web.client.RestTemplate;
 import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.server.ResponseStatusException;
 import tn.esprit.spring.userservice.Entity.Token;
@@ -236,6 +239,7 @@ public class AuthentificationServiceImpl implements AuthenticationService {
 
         return generatedToken;
     }
+
     private String generateActivationCode(int length) {
         String characters = "0123456789";
         StringBuilder codeBuilder = new StringBuilder();
@@ -244,6 +248,8 @@ public class AuthentificationServiceImpl implements AuthenticationService {
             int randomIndex = secureRandom.nextInt(characters.length());
             codeBuilder.append(characters.charAt(randomIndex));
         }
+        System.out.println("activation code: "+ codeBuilder.toString());
+
         return codeBuilder.toString();
     }
     @Override
@@ -258,5 +264,28 @@ public class AuthentificationServiceImpl implements AuthenticationService {
         user.setMotDePasse(bCryptPasswordEncoder.encode(newPassword));
         userRepository.save(user);
     }
+    @Override
+    public boolean verifyRecaptcha(String token) {
+        String secret = "6LewnB4rAAAAAESdvbw1XNwOfsVHeuJmZl2lye5W"; // récupérée depuis l'admin Google reCAPTCHA
+        String url = "https://www.google.com/recaptcha/api/siteverify";
+
+        try {
+            RestTemplate restTemplate = new RestTemplate();
+            MultiValueMap<String, String> params = new LinkedMultiValueMap<>();
+            params.add("secret", secret);
+            params.add("response", token);
+
+            HttpHeaders headers = new HttpHeaders();
+            headers.setContentType(MediaType.APPLICATION_FORM_URLENCODED);
+            HttpEntity<MultiValueMap<String, String>> request = new HttpEntity<>(params, headers);
+
+            ResponseEntity<Map> response = restTemplate.postForEntity(url, request, Map.class);
+            Map body = response.getBody();
+            return body != null && Boolean.TRUE.equals(body.get("success"));
+        } catch (Exception e) {
+            return false;
+        }
+    }
+
 
 }

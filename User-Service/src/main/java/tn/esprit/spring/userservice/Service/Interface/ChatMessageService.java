@@ -12,5 +12,8 @@ public interface ChatMessageService {
     public ChatMessage save(ChatMessage chatMessage);
 
     List<ChatMessage> findChatMessagesBetween(Long senderId, Long recipientId);
+     void markMessageAsRead(Long messageId) ;
 
-    }
+    List<ChatMessage> findMessagesByChatRoomId(Long chatRoomId);
+
+}

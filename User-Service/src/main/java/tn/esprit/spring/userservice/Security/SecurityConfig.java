@@ -41,6 +41,7 @@ import org.springframework.security.web.authentication.UsernamePasswordAuthentic
                                     "/model-stt/**",
                                     "/applications/**",
                                     "/notifications/**",
+                                    "/statistics/**",
                                     "/ws/**"
                             )
                             .permitAll()

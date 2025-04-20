@@ -1,14 +1,20 @@
 package tn.esprit.spring.userservice.Controller;
 
 import lombok.RequiredArgsConstructor;
+import org.cloudinary.json.JSONException;
+import org.cloudinary.json.JSONObject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.context.event.EventListener;
+import org.springframework.messaging.handler.annotation.Payload;
 import org.springframework.messaging.handler.annotation.SendTo;
+import org.springframework.messaging.simp.stomp.StompHeaderAccessor;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.http.ResponseEntity;
 import org.springframework.http.HttpStatus;
 import org.springframework.messaging.handler.annotation.MessageMapping;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
+import org.springframework.web.socket.messaging.SessionDisconnectEvent;
 import tn.esprit.spring.userservice.Entity.ChatMessage;
 import tn.esprit.spring.userservice.Entity.ChatRoom;
 import tn.esprit.spring.userservice.Entity.User;
@@ -144,7 +150,8 @@ public class ChatController {
                             msg.getContent(),
                             msg.getSender().getId(),
                             msg.getRecipient().getId(),
-                            msg.getTimestamp()
+                            msg.getTimestamp(),
+                            msg.isRead()
                     ))
                     .toList();
 
@@ -168,17 +175,16 @@ public class ChatController {
             chatMessage.setSender(userService.getUserById(chatMessageDTO.getSender()));
             chatMessage.setRecipient(userService.getUserById(chatMessageDTO.getRecipient()));
             chatMessage.setTimestamp(new Date());
-
+            chatMessage.setRead(false);
             // Save the message
             ChatMessage saved = chatMessageService.save(chatMessage);
-
             // Send message to sender and recipient (only once if it's the same user)
             Set<Long> userIds = new HashSet<>(Arrays.asList(
                     chatMessageDTO.getSender(), chatMessageDTO.getRecipient()
             ));
             userIds.forEach(userId ->
                     messagingTemplate.convertAndSendToUser(
-                            String.valueOf(userId), "/queue/messages", chatMessage
+                            String.valueOf(userId), "/queue/messages", saved
                     )
             );
 
@@ -192,20 +198,55 @@ public class ChatController {
     @MessageMapping("/user.online")
     public void userConnected(Map<String, Object> payload, Principal principal) {
         Long userId = Long.parseLong(String.valueOf(payload.get("userId")));
-
-        // Add user to memory set
         connectedUserIds.add(userId);
 
-        // 🟢 Set user status to ONLINE in DB
         User user = userService.getUserById(userId);
         user.setEtat(Etat.ONLINE);
         userService.saveUser(user);
 
-        // Broadcast updated user list
         List<User> connectedUsers = userService.findConnectedUsers();
         messagingTemplate.convertAndSend("/topic/connected-users", connectedUsers);
     }
 
+    @MessageMapping("/user.offline")
+    public void userDisconnected(Map<String, Object> payload, Principal principal) {
+        System.out.println("🔌 Received offline status request");
+
+        Long userId = Long.parseLong(String.valueOf(payload.get("userId")));
+        System.out.println("🧍 User going offline: ID = " + userId);
+
+        connectedUserIds.remove(userId);
+        System.out.println("✅ Removed from connected user list");
+
+        User user = userService.getUserById(userId);
+        userService.disconnect(user);
+
+        List<User> connectedUsers = userService.findConnectedUsers();
+        messagingTemplate.convertAndSend("/topic/connected-users", connectedUsers);
+        System.out.println("📤 Sent updated connected users list to /topic/connected-users");
+    }
+
+
+    // In your WebSocket controller
+    @EventListener
+    public void handleWebSocketDisconnectListener(SessionDisconnectEvent event) {
+        StompHeaderAccessor headerAccessor = StompHeaderAccessor.wrap(event.getMessage());
+        String userId = headerAccessor.getFirstNativeHeader("userId");
+
+        if (userId != null) {
+            connectedUserIds.remove(Long.parseLong(userId));
+            User user = userService.getUserById(Long.parseLong(userId));
+            user.setEtat(Etat.OFFLINE);
+            userService.saveUser(user);
+            List<User> connectedUsers = userService.findConnectedUsers();
+            messagingTemplate.convertAndSend("/topic/connected-users", connectedUsers);
+        }
+    }
+    @PutMapping("/mark-as-read/{messageId}")
+    public ResponseEntity<?> markAsRead(@PathVariable Long messageId) {
+        chatMessageService.markMessageAsRead(messageId);
+        return ResponseEntity.ok(Collections.singletonMap("message", "Message marked as read"));
+    }
     @GetMapping("/all/{userId}")
     public ResponseEntity<?> getUsersWithConversations(@PathVariable Long userId) {
         try {
@@ -260,4 +301,40 @@ public class ChatController {
                     .body("Unexpected error: " + e.getMessage());
         }
     }
+    @GetMapping("/messages/room/{chatRoomId}")
+    public ResponseEntity<?> getMessagesByChatRoomId(@PathVariable Long chatRoomId) {
+        try {
+            List<ChatMessage> messages = chatMessageService.findMessagesByChatRoomId(chatRoomId);
+
+            if (messages.isEmpty()) {
+                return ResponseEntity.status(HttpStatus.NO_CONTENT).body("No messages found for this chat room.");
+            }
+
+            return ResponseEntity.ok(messages);
+        } catch (Exception e) {
+            logger.error("Error retrieving messages for chat room {}: {}", chatRoomId, e.getMessage(), e);
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body("Error retrieving messages: " + e.getMessage());
+        }
+    }
+    // Example of WebSocket handler for message read
+    @MessageMapping("/readMessage")
+    public void handleMessageRead(@Payload String payload) {
+        // Parse the payload (assuming it's a JSON string)
+        try {
+            JSONObject jsonObject = new JSONObject(payload);
+            Long messageId = jsonObject.getLong("messageId");
+            Long senderId = jsonObject.getLong("senderId");
+
+            // Send a notification to the sender
+            messagingTemplate.convertAndSendToUser(
+                    senderId.toString(), "/queue/notifications",
+                    "Message read by recipient: " + messageId);
+        } catch (JSONException e) {
+            e.printStackTrace();
+            // Handle error parsing the JSON payload
+        }
+    }
+
+
 }

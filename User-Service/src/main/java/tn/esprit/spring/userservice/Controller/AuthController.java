@@ -42,23 +42,29 @@ public class AuthController {
                     .body(Map.of("status", ex.getStatusCode().value(), "message", ex.getReason()));
         }
     }
-
-
-
     @PostMapping("/authenticate")
     public ResponseEntity<?> authenticate(@RequestBody @Valid AuthenticationRequest request) {
         try {
+            // 1. Vérifie le token reCAPTCHA
+            boolean isValidCaptcha = service.verifyRecaptcha(request.getRecaptchaToken());
+            if (!isValidCaptcha) {
+                return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                        .body(Collections.singletonMap("error", "Invalid reCAPTCHA token"));
+            }
+
+            // 2. Si OK, continue le login
             AuthenticationResponse response = service.authenticate(request);
-            return ResponseEntity.ok(response); // Return the JWT token if authentication is successful
+            return ResponseEntity.ok(response);
+
         } catch (ResponseStatusException ex) {
-            // Handle different exception cases for more fine-grained error responses
             return ResponseEntity.status(ex.getStatusCode())
                     .body(Map.of("status", ex.getStatusCode().value(), "message", ex.getReason()));
         } catch (RuntimeException e) {
-            // For unexpected errors, you can return a generic error message
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(Collections.singletonMap("error", e.getMessage()));
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
+                    .body(Collections.singletonMap("error", e.getMessage()));
         }
     }
+
 
 
     @GetMapping("/activate-account")

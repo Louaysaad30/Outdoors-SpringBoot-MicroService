@@ -12,7 +12,7 @@ public interface AuthenticationService {
     public void register(RegistrationRequest request) throws  MessagingException;
 
     public AuthenticationResponse authenticate(AuthenticationRequest request);
-
+     boolean verifyRecaptcha(String token) ;
     void activateAccount(String token) throws MessagingException;
     public void resendToken(String email) throws MessagingException;
     public boolean verifyPassword(Long id, String enteredPassword);
