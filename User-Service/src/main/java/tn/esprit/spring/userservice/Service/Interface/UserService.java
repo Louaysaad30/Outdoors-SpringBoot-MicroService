@@ -2,6 +2,7 @@ package tn.esprit.spring.userservice.Service.Interface;
 
 import tn.esprit.spring.userservice.Entity.User;
 import tn.esprit.spring.userservice.dto.Request.UserUpdateRequest;
+import tn.esprit.spring.userservice.dto.Response.UserDetailDTO;
 
 import java.io.IOException;
 import java.util.List;
@@ -18,6 +19,12 @@ public interface UserService {
     public void saveUser(User user);
     public void disconnect(User user);
     public List<User> findConnectedUsers();
+    public void incrementSessionStats(Long userId);
+    public void incrementNavigation(Long userId) ;
+    UserDetailDTO getUserDetailDTOByUserId(Long userId);
+    String predictChurn(Long userId);
+
     public List<User> getUsersWithConversations(Long userId) ;
+
 
 }

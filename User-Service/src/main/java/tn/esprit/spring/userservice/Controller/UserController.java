@@ -145,6 +145,18 @@ public class UserController {
         userService.saveUser(user);
         return ResponseEntity.ok("User " + user.getNom() + " is now ONLINE");
     }
+    // UserController.java
+    @PostMapping("/increment-navigation")
+    public ResponseEntity<String> incrementNavigation(@RequestParam Long userId) {
+        userService.incrementNavigation(userId);
+        return ResponseEntity.ok("Navigation incremented");
+    }
+    @PostMapping("/predict-churn")
+    public ResponseEntity<String> predictChurn(@RequestParam Long userId) {
+        String result = userService.predictChurn(userId);
+        return ResponseEntity.ok(result);
+    }
+
 
     @PutMapping("/disconnect/{id}")
     public ResponseEntity<String> disconnectUser(@PathVariable Long id) {

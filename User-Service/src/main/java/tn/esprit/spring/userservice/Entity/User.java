@@ -44,6 +44,9 @@ public class User  implements UserDetails {
     List<Role> roles;
     boolean accountLocked;
     boolean enabled;
+    @JsonIgnore
+    @OneToOne(mappedBy = "user", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+    UserDetail userDetail;
     @Override
     //@JsonIgnore
     public Collection<? extends GrantedAuthority> getAuthorities() {

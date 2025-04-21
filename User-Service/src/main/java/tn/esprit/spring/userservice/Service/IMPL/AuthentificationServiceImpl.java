@@ -23,6 +23,7 @@ import tn.esprit.spring.userservice.Security.JwtService;
 import tn.esprit.spring.userservice.Service.Interface.AuthenticationService;
 import tn.esprit.spring.userservice.Service.Interface.EmailService;
 import tn.esprit.spring.userservice.Service.Interface.ICloudinaryService;
+import tn.esprit.spring.userservice.Service.Interface.UserService;
 import tn.esprit.spring.userservice.dto.Request.AuthenticationRequest;
 import tn.esprit.spring.userservice.dto.Request.RegistrationRequest;
 import tn.esprit.spring.userservice.dto.Response.AuthenticationResponse;
@@ -43,6 +44,7 @@ public class AuthentificationServiceImpl implements AuthenticationService {
     private final PasswordEncoder bCryptPasswordEncoder;
     private  final UserRepository userRepository;
     private final AuthenticationManager authenticationManager;
+    private final UserService userService;
     private  final TokenRepository tokenRepository;
     private final EmailService emailService;
     private final JwtService jwtService;
@@ -124,6 +126,12 @@ public class AuthentificationServiceImpl implements AuthenticationService {
         // Generate JWT token if authentication passes
         var claims = new HashMap<String, Object>();
         claims.put("fullName", user.fullName());
+        try {
+            userService.incrementSessionStats(user.getId());
+        }
+        catch (Exception e) {
+            throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "Error incrementing session stats", e);
+        }
 
         var jwtToken = jwtService.generateToken(claims, user);
         return AuthenticationResponse.builder()

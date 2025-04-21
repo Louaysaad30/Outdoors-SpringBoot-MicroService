@@ -1,27 +1,36 @@
 package tn.esprit.spring.userservice.Service.IMPL;
 import jakarta.transaction.Transactional;
 import lombok.AllArgsConstructor;
-import org.springframework.http.HttpStatus;
+import org.springframework.http.*;
 import org.springframework.stereotype.Service;
+import org.springframework.web.client.RestTemplate;
 import org.springframework.web.server.ResponseStatusException;
 import tn.esprit.spring.userservice.Entity.User;
+import tn.esprit.spring.userservice.Entity.UserDetail;
 import tn.esprit.spring.userservice.Enum.EmailTemplateName;
 import tn.esprit.spring.userservice.Enum.Etat;
 import tn.esprit.spring.userservice.Repository.ChatMessageRepository;
 import tn.esprit.spring.userservice.Repository.TokenRepository;
+import tn.esprit.spring.userservice.Repository.UserDetailRepository;
 import tn.esprit.spring.userservice.Repository.UserRepository;
 import tn.esprit.spring.userservice.Service.Interface.EmailService;
 import tn.esprit.spring.userservice.Service.Interface.ICloudinaryService;
 import tn.esprit.spring.userservice.Service.Interface.UserService;
 import tn.esprit.spring.userservice.dto.Request.UserUpdateRequest;
+import tn.esprit.spring.userservice.dto.Response.UserDetailDTO;
 
 import java.io.IOException;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
+import java.time.YearMonth;
 
 @Service
 @AllArgsConstructor
 public class UserServiceIMPL implements UserService {
+
+    UserDetailRepository userDetailRepository;
     UserRepository userRepository;
     TokenRepository  tokenRepository ;
     private final ICloudinaryService cloudinaryService;
@@ -131,13 +140,86 @@ public class UserServiceIMPL implements UserService {
     }
 
 
-
-
+    @Override
     public void saveUser(User user) {
         user.setEtat(Etat.ONLINE);
-        userRepository.save(user);
+        User savedUser = userRepository.save(user);
+    }
+    @Override
+    public void incrementNavigation(Long userId) {
+        UserDetail userDetail = userDetailRepository.findByUserId(userId)
+                .orElseThrow(() -> new RuntimeException("UserDetail not found"));
+
+        userDetail.setTotalNavigationsFav1(userDetail.getTotalNavigationsFav1() + 1);
+        userDetailRepository.save(userDetail);
+    }
+    @Override
+    public UserDetailDTO getUserDetailDTOByUserId(Long userId) {
+        UserDetail userDetail = userDetailRepository.findByUserId(userId)
+                .orElseThrow(() -> new RuntimeException("UserDetail not found"));
+
+        return new UserDetailDTO(
+                userDetail.getSessions(),
+                userDetail.getTotalSessions(),
+                userDetail.getNDaysAfterOnboarding(),
+                userDetail.getTotalNavigationsFav1(),
+                userDetail.getActivityDays()
+        );
     }
 
+    @Override
+    public String predictChurn(Long userId) {
+        UserDetailDTO dto = getUserDetailDTOByUserId(userId);
+
+        try {
+            RestTemplate restTemplate = new RestTemplate();
+            HttpHeaders headers = new HttpHeaders();
+            headers.setContentType(MediaType.APPLICATION_JSON);
+
+            HttpEntity<UserDetailDTO> request = new HttpEntity<>(dto, headers);
+
+            ResponseEntity<String> response = restTemplate.postForEntity(
+                    "http://127.0.0.1:5000/predict",  // Replace with your Flask endpoint
+                    request,
+                    String.class
+            );
+
+            return response.getBody();
+        } catch (Exception e) {
+            throw new RuntimeException("Error calling ML server: " + e.getMessage());
+        }
+    }
+
+
+
+    public void incrementSessionStats(Long userId) {
+        UserDetail userDetail = userDetailRepository.findByUserId(userId)
+                .orElseThrow(() -> new RuntimeException("UserDetail not found"));
+
+        userDetail.setTotalSessions(userDetail.getTotalSessions() + 1);
+
+        // Handle monthly sessions
+        String currentMonth = YearMonth.now().toString();
+        if (userDetail.getLastSessionMonth() == null || !userDetail.getLastSessionMonth().equals(currentMonth)) {
+            userDetail.setSessions(1);
+            userDetail.setLastSessionMonth(currentMonth);
+        } else {
+            userDetail.setSessions(userDetail.getSessions() + 1);
+        }
+
+        // Handle activityDays (distinct days)
+        LocalDate today = LocalDate.now();
+        if (userDetail.getLastActiveDate() == null || !userDetail.getLastActiveDate().equals(today)) {
+            userDetail.setActivityDays(userDetail.getActivityDays() + 1);
+            userDetail.setLastActiveDate(today);
+        }
+
+        // Handle nDaysAfterOnboarding
+        long daysSinceOnboarding = java.time.Duration.between(userDetail.getCreatedAt(), LocalDateTime.now()).toDays();
+        userDetail.setNDaysAfterOnboarding((int) daysSinceOnboarding);
+
+        userDetailRepository.save(userDetail);
+    }
     public void disconnect(User user) {
         var storedUser = userRepository.findById(user.getId()).orElse(null);
         if (storedUser != null) {
