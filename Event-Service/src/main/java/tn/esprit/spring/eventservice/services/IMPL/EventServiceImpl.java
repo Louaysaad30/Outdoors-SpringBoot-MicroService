@@ -23,7 +23,7 @@ public class EventServiceImpl implements IEventService {
     private static final Logger log = LoggerFactory.getLogger(EventServiceImpl.class);
 
 
-    @Scheduled(cron = "0 * * * * *")
+    @Scheduled(cron = "0 0 * * * *")
     @Transactional
     public void updatePastEventsStatus() {
         LocalDateTime now = LocalDateTime.now();

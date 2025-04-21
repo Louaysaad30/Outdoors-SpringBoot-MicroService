@@ -58,7 +58,9 @@ public class EventController {
                 return new ResponseEntity<>(HttpStatus.NOT_FOUND);
             }
             EventArea eventArea = eventAreaOpt.get();
-
+            if (!eventArea.isApproved()) {
+                return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
+            }
             // Define a formatter for parsing date strings
             DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm");
 

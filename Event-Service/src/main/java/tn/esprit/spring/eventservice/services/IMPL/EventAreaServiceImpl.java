@@ -3,12 +3,14 @@ package tn.esprit.spring.eventservice.services.IMPL;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import tn.esprit.spring.eventservice.entity.EventArea;
+import tn.esprit.spring.eventservice.entity.EventAreaStatus;
 import tn.esprit.spring.eventservice.repository.EventAreaRepository;
 import tn.esprit.spring.eventservice.services.IMPL.EventAreaServiceImpl;
 import tn.esprit.spring.eventservice.services.interfaces.IEventAreaService;
 
 import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -39,5 +41,21 @@ public class EventAreaServiceImpl implements IEventAreaService {
     @Override
     public void deleteEventArea(Long id) {
         eventAreaRepository.deleteById(id);
+    }
+
+
+    @Override
+    public List<EventArea> getApprovedEventAreas() {
+        return eventAreaRepository.findByStatus(EventAreaStatus.APPROVED);
+    }
+
+    @Override
+    public List<EventArea> getPendingEventAreas() {
+        return eventAreaRepository.findByStatus(EventAreaStatus.PENDING);
+    }
+
+    @Override
+    public List<EventArea> getRejectedEventAreas() {
+        return eventAreaRepository.findByStatus(EventAreaStatus.REJECTED);
     }
 }

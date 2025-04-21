@@ -11,4 +11,7 @@ public interface IEventAreaService {
     EventArea saveEventArea(EventArea eventArea);
     EventArea updateEventArea(EventArea eventArea);
     void deleteEventArea(Long id);
+    List<EventArea> getApprovedEventAreas();
+    List<EventArea> getPendingEventAreas();
+    List<EventArea>getRejectedEventAreas();
 }
