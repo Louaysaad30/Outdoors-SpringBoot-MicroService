@@ -14,4 +14,5 @@ public interface IEventAreaService {
     List<EventArea> getApprovedEventAreas();
     List<EventArea> getPendingEventAreas();
     List<EventArea>getRejectedEventAreas();
+    List<EventArea> getEventAreasByUserId(Long userId);
 }

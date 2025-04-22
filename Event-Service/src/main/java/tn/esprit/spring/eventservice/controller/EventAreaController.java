@@ -254,6 +254,13 @@
                                 existingArea.setLongitude(longitude);
                                 existingArea.setDescription(description);
 
+
+                                // Set status back to PENDING for review
+                                existingArea.setStatus(EventAreaStatus.PENDING);
+
+                                // Clear any existing rejection message since it's being resubmitted
+                                existingArea.setRejectionMessage(null);
+
                                 // Update image only if a new one is provided
                                 if (image != null && !image.isEmpty()) {
                                     String imageUrl = cloudinaryService.uploadImage(image);
@@ -301,4 +308,14 @@
                         })
                         .orElse(new ResponseEntity<>(HttpStatus.NOT_FOUND));
             }
+
+
+            @GetMapping("/user/{userId}")
+            @Operation(summary = "Get event areas by user ID", description = "Retrieves all event areas created by a specific user")
+            public ResponseEntity<List<EventArea>> getEventAreasByUserId(@PathVariable Long userId) {
+                return ResponseEntity.ok(eventAreaService.getEventAreasByUserId(userId));
+            }
+
+
+
         }

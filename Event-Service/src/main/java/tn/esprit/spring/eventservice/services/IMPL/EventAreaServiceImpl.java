@@ -58,4 +58,9 @@ public class EventAreaServiceImpl implements IEventAreaService {
     public List<EventArea> getRejectedEventAreas() {
         return eventAreaRepository.findByStatus(EventAreaStatus.REJECTED);
     }
+
+    @Override
+    public List<EventArea> getEventAreasByUserId(Long userId) {
+        return eventAreaRepository.findByUserId(userId);
+    }
 }
