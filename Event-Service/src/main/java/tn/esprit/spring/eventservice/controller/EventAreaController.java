@@ -16,6 +16,7 @@
         import org.springframework.web.multipart.MultipartFile;
         import tn.esprit.spring.eventservice.dto.EventAreaApprovalDTO;
         import tn.esprit.spring.eventservice.dto.EventAreaStatusChangeDTO;
+        import tn.esprit.spring.eventservice.entity.Event;
         import tn.esprit.spring.eventservice.entity.EventArea;
         import tn.esprit.spring.eventservice.entity.EventAreaStatus;
         import tn.esprit.spring.eventservice.services.IMPL.EventAreaServiceImpl;
@@ -285,5 +286,19 @@
                 }
                 eventAreaService.deleteEventArea(id);
                 return new ResponseEntity<>(HttpStatus.NO_CONTENT);
+            }
+
+
+            @GetMapping("/{id}/events")
+            @Operation(summary = "Get events by event area", description = "Retrieves all events that are hosted at this venue")
+            public ResponseEntity<List<Event>> getEventsByEventArea(@PathVariable Long id) {
+                return eventAreaService.getEventAreaById(id)
+                        .map(eventArea -> {
+                            // Since events is marked with @JsonIgnore in EventArea,
+                            // we need to manually retrieve them
+                            List<Event> events = eventArea.getEvents();
+                            return ResponseEntity.ok(events);
+                        })
+                        .orElse(new ResponseEntity<>(HttpStatus.NOT_FOUND));
             }
         }
