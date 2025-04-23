@@ -48,8 +48,9 @@ public class EmailServiceImpl implements EmailService {
         Context context = new Context();
         context.setVariables(properties);
 
-        helper.setFrom("koussay600@gmail.com");
-        helper.setTo("koussay600@gmail.com");
+
+        helper.setFrom("onsfidha3@gmail.com");
+        helper.setTo(to);
         helper.setSubject(subject);
 
         String template = templateEngine.process(templateName, context);
