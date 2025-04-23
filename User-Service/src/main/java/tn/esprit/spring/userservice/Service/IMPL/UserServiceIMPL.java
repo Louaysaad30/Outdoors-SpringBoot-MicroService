@@ -6,6 +6,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.server.ResponseStatusException;
 import tn.esprit.spring.userservice.Entity.User;
 import tn.esprit.spring.userservice.Enum.EmailTemplateName;
+import tn.esprit.spring.userservice.Enum.RoleType;
 import tn.esprit.spring.userservice.Repository.TokenRepository;
 import tn.esprit.spring.userservice.Repository.UserRepository;
 import tn.esprit.spring.userservice.Service.Interface.EmailService;
@@ -127,6 +128,10 @@ public class UserServiceIMPL implements UserService {
         return user;
     }
 
+    @Override
+    public List<User> getUsersByRoleLivreur() {
+        return userRepository.findByRolesRoleType(RoleType.LIVREUR);
+    }
 
 
 }

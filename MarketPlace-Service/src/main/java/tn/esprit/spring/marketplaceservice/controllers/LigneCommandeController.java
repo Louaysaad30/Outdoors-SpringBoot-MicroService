@@ -73,6 +73,5 @@ public class LigneCommandeController {
         return iLigneCommandeService.findByCommandeId(idCommande);
     }
 
-    // LigneCommandeController.java
 
 }

@@ -107,4 +107,14 @@ public class UserController {
         }
     }
 
+    @GetMapping("/role/livreur")
+    public ResponseEntity<?> getUsersByRoleLivreur() {
+        try {
+            List<User> users = userService.getUsersByRoleLivreur();
+            return ResponseEntity.ok(users);
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Failed to fetch livreur users.");
+        }
+    }
+
 }

@@ -15,5 +15,6 @@ public interface UserService {
     User blockUser(Long id, boolean unblock);
     void deleteUser(Long id);
     User verifyUser(Long id);
+    List<User> getUsersByRoleLivreur();
 
 }

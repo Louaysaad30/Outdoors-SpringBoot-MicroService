@@ -7,6 +7,8 @@ import lombok.*;
 import lombok.experimental.FieldDefaults;
 
 import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.util.Date;
 import java.util.List;
 
 @Entity
@@ -23,7 +25,14 @@ public class Livraison {
         Long idLivraison;
         LocalDate dateLivraison;
         String adresseLivraison;
+        @Enumerated(EnumType.STRING)
         Status etatLivraison;
+        Long livreurId;
+        String OrderNumber;
+        Double montantCommande;
+        String paymentMethod;
+        LocalDateTime updateDate;
+
 
         @JsonIgnore
         @OneToMany(mappedBy = "livraison")
