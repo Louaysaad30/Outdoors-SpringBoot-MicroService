@@ -11,5 +11,6 @@ public interface IFavorisService {
     Favoris retrieveFavoris(long idFavoris);
     void removeFavoris(long idFavoris);
 
+    List<Favoris> retrieveFavorisByUserId(Long userId);
 
 }

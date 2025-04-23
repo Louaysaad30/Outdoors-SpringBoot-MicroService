@@ -103,7 +103,19 @@ public class PanierServiceIMPL implements IPanierService {
         return panierRepository.save(panier);
     }
 
+    @Override
+    public List<Panier> getAllPaniersByUserId(Long userId) {
+        return panierRepository.findAllByUserId(userId);
+    }
 
+    @Override
+    public Panier validatePanier(Long panierId) {
+        Panier panier = panierRepository.findById(panierId)
+                .orElseThrow(() -> new RuntimeException("Panier not found with id: " + panierId));
+            panier.setValidated(true);
+            return panierRepository.save(panier);
+
+    }
 
 
 }

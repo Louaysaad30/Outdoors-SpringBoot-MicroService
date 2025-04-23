@@ -24,6 +24,7 @@ public class Panier {
         private List<LigneCommande> lignesCommande;
         Double total;
         Long userId;
+        boolean validated;
 
         public Long getId() {
                 return idPanier;

@@ -27,7 +27,7 @@ public class LigneCommandeController {
     }
 
     @PostMapping("/addLigneCommande")
-    public LigneCommande addLigneCommande(LigneCommande ligneCommande) {
+    public LigneCommande addLigneCommande(@RequestBody LigneCommande ligneCommande) {
         return iLigneCommandeService.addLigneCommande(ligneCommande);
     }
 
