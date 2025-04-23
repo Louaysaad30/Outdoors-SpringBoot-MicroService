@@ -1,18 +1,22 @@
 package tn.esprit.spring.forumservice.Service.API;
 
+import com.github.pemistahl.lingua.api.Language;
+import com.github.pemistahl.lingua.api.LanguageDetector;
+import com.github.pemistahl.lingua.api.LanguageDetectorBuilder;
 import lombok.RequiredArgsConstructor;
-import org.springframework.http.HttpEntity;
-import org.springframework.http.HttpHeaders;
-import org.springframework.http.MediaType;
-import org.springframework.http.ResponseEntity;
+import org.springframework.http.*;
 import org.springframework.stereotype.Service;
 import org.springframework.util.LinkedMultiValueMap;
 import org.springframework.util.MultiValueMap;
 import org.springframework.web.client.RestTemplate;
-import tn.esprit.spring.forumservice.Config.PerspectiveApiConfig;
-import tn.esprit.spring.forumservice.Config.SightengineApiConfig;
+import tn.esprit.spring.forumservice.Config.*;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.core.type.TypeReference;
+import java.util.List;
 
+import java.util.Date;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 @Service
@@ -23,6 +27,9 @@ public class ServiceAPI {
     private final SightengineApiConfig sightengineApiConfig;
     private final PerspectiveApiConfig perspectiveApiConfig;
     private static final float TOXICITY_THRESHOLD = 0.7f;
+    private final DeepAIConfig deepAIConfig;
+    private final PredisAIConfig predisConfig;
+
 
 
 
@@ -167,4 +174,238 @@ public boolean isImageAppropriate(String imageUrl) {
         }
 
         return true;
-    }}
+    }
+
+
+
+//public String generateImage(String textDescription) {
+//    try {
+//        HttpHeaders headers = new HttpHeaders();
+//        headers.setContentType(MediaType.APPLICATION_FORM_URLENCODED);
+//        headers.set("api-key", deepAIConfig.getApiKey());
+//
+//        MultiValueMap<String, String> requestBody = new LinkedMultiValueMap<>();
+//        requestBody.add("text", textDescription);
+//
+//        HttpEntity<MultiValueMap<String, String>> requestEntity = new HttpEntity<>(requestBody, headers);
+//
+//        Map<String, Object> response = restTemplate.postForObject(
+//                deepAIConfig.getApiUrl() + "/text2img",
+//                requestEntity,
+//                Map.class
+//        );
+//
+//        return (String) response.get("output_url");
+//    } catch (Exception e) {
+//        System.err.println("Error generating image: " + e.getMessage());
+//        throw new RuntimeException("Failed to generate image: " + e.getMessage());
+//    }
+//}
+
+
+/*
+public String generateVideo(String textDescription) {
+    try {
+        HttpHeaders headers = new HttpHeaders();
+        headers.setContentType(MediaType.APPLICATION_FORM_URLENCODED);
+        headers.set("api-key", deepAIConfig.getApiKey());
+
+        MultiValueMap<String, String> requestBody = new LinkedMultiValueMap<>();
+        requestBody.add("text", textDescription);
+
+        HttpEntity<MultiValueMap<String, String>> requestEntity = new HttpEntity<>(requestBody, headers);
+
+        Map<String, Object> response = restTemplate.postForObject(
+                deepAIConfig.getApiUrl() + "/text2video",
+                requestEntity,
+                Map.class
+        );
+
+        return (String) response.get("output_url");
+    } catch (Exception e) {
+        System.err.println("Error generating video: " + e.getMessage());
+        throw new RuntimeException("Failed to generate video: " + e.getMessage());
+    }
+}
+*/
+
+public String generateContentWithPredis(String prompt, String contentType) {
+        try {
+            HttpHeaders headers = new HttpHeaders();
+            headers.setContentType(MediaType.APPLICATION_JSON);
+            headers.set("Authorization", predisConfig.getApiKey()); // No "Bearer" prefix
+
+            Map<String, Object> requestBody = new HashMap<>();
+            requestBody.put("brand_id", "67ff8d8b65b3c658c22d35fc"); // Replace with actual brand ID
+            requestBody.put("text", prompt);
+            requestBody.put("media_type", contentType.equals("image") ? "single_image" : "video");
+
+            HttpEntity<Map<String, Object>> requestEntity = new HttpEntity<>(requestBody, headers);
+
+            String apiUrl = "https://brain.predis.ai/predis_api/v1/create_content/"; // Correct endpoint
+
+            ResponseEntity<Map> response = restTemplate.exchange(
+                    apiUrl,
+                    HttpMethod.POST,
+                    requestEntity,
+                    Map.class
+            );
+
+            if (response.getStatusCode() == HttpStatus.OK && response.getBody() != null) {
+                // Handle asynchronous nature of the API
+                // This API doesn't return content URL directly, just post IDs
+                List<String> postIds = (List<String>) response.getBody().get("post_ids");
+                if (postIds != null && !postIds.isEmpty()) {
+                    return "Content creation initiated with ID: " + postIds.get(0) +
+                           " (Check your webhook for the final content URL)";
+                } else {
+                    throw new RuntimeException("No post IDs received from Predis.ai");
+                }
+            } else {
+                throw new RuntimeException("Failed to generate content with Predis.ai: " + response.getStatusCode());
+            }
+        } catch (Exception e) {
+            System.err.println("Error generating content with Predis.ai: " + e.getMessage());
+            throw new RuntimeException("Failed to generate content: " + e.getMessage());
+        }
+    }
+    public String generateImage(String prompt) {
+        return generateContentWithPredis(prompt, "image");
+    }
+
+    public String generateVideo(String prompt) {
+        return generateContentWithPredis(prompt, "video");
+    }
+
+
+
+    // Add these fields to ServiceAPI class
+    private final HuggingFaceConfig huggingFaceConfig;
+
+/**
+ * Translates text using the NLLB-200 model which supports 200 languages
+ * @param text Text to translate
+ * @param targetLang Target language code
+ * @return Translated text
+ */
+public String translate(String text, String targetLang) {
+    try {
+        // Map the target language to FLORES-200 code
+        String targetCode = mapToNLLBLanguageCode(targetLang);
+        String sourceLang = detectLanguage(text);
+        String sourceCode = mapToNLLBLanguageCode(sourceLang);
+
+        // Create request body
+        Map<String, Object> requestBody = new HashMap<>();
+        requestBody.put("inputs", text);
+
+        // Format parameters according to NLLB model requirements
+        Map<String, String> parameters = new HashMap<>();
+        parameters.put("src_lang", sourceCode);
+        parameters.put("tgt_lang", targetCode);
+
+        requestBody.put("parameters", parameters);
+
+        // Set headers
+        HttpHeaders headers = new HttpHeaders();
+        headers.setContentType(MediaType.APPLICATION_JSON);
+        headers.set("Authorization", "Bearer " + huggingFaceConfig.getApiKey());
+
+        // Create request entity
+        HttpEntity<Map<String, Object>> requestEntity = new HttpEntity<>(requestBody, headers);
+
+        // Make API call to the full URL with model name
+        ResponseEntity<String> response = restTemplate.exchange(
+                huggingFaceConfig.getNllbUrl(), // Use getNllbUrl() which includes the model path
+                HttpMethod.POST,
+                requestEntity,
+                String.class
+        );
+
+        // Parse response
+        String responseBody = response.getBody();
+        if (responseBody == null) {
+            return text;
+        }
+
+        // Process JSON response - NLLB typically returns array with translation_text
+        if (responseBody.startsWith("[")) {
+            // Use ObjectMapper to parse the JSON array
+            ObjectMapper mapper = new ObjectMapper();
+            List<Map<String, String>> result = mapper.readValue(responseBody,
+                    new TypeReference<List<Map<String, String>>>() {});
+            if (!result.isEmpty() && result.get(0).containsKey("translation_text")) {
+                return result.get(0).get("translation_text");
+            }
+        }
+
+        return responseBody.replaceAll("^\"(.*)\"$", "$1");
+    } catch (Exception e) {
+        System.out.println("Error translating text: " + e.getMessage());
+        // Return original text on error
+        return text;
+    }
+}
+
+
+
+/**
+ * Maps language codes to FLORES-200 codes used by NLLB
+ */
+private String mapToNLLBLanguageCode(String lang) {
+    // Common language mappings to FLORES codes
+    Map<String, String> floresMap = new HashMap<>();
+    floresMap.put("en", "eng_Latn");
+    floresMap.put("fr", "fra_Latn");
+    floresMap.put("ar", "arb_Arab");
+    floresMap.put("es", "spa_Latn");
+    floresMap.put("de", "deu_Latn");
+    floresMap.put("it", "ita_Latn");
+    floresMap.put("zh", "zho_Hans");
+    floresMap.put("ja", "jpn_Jpan");
+    floresMap.put("ko", "kor_Hang");
+    floresMap.put("ru", "rus_Cyrl");
+
+    // Add more mappings for other languages as needed
+
+    return floresMap.getOrDefault(lang.toLowerCase(), "eng_Latn");
+}
+
+/**
+ * Returns available languages for translation with their FLORES-200 codes
+ */
+public Map<String, String> getAvailableLanguages() {
+    Map<String, String> languages = new HashMap<>();
+    languages.put("eng_Latn", "English");
+    languages.put("fra_Latn", "French");
+    languages.put("arb_Arab", "Arabic");
+    languages.put("spa_Latn", "Spanish");
+    languages.put("deu_Latn", "German");
+    languages.put("ita_Latn", "Italian");
+    languages.put("zho_Hans", "Chinese (Simplified)");
+    languages.put("jpn_Jpan", "Japanese");
+    languages.put("kor_Hang", "Korean");
+    languages.put("rus_Cyrl", "Russian");
+    // Add more NLLB supported languages
+
+    return languages;
+}
+// After
+    /**
+     * Detects the language of the given text.
+     * Placeholder implementation returning "en" (English) by default.
+     * Replace with actual language detection logic if needed.
+     */
+   private String detectLanguage(String text) {
+       // Use Lingua library for language detection
+       LanguageDetector detector = LanguageDetectorBuilder.fromAllLanguages().build();
+       Language detectedLanguage = detector.detectLanguageOf(text);
+
+       // Convert Lingua language to your language code format
+       if (detectedLanguage != null) {
+           return detectedLanguage.getIsoCode639_1().toString().toLowerCase();
+       }
+
+       return "en"; // Fallback to English
+   }
+}

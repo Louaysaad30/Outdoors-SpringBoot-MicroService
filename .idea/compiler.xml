@@ -8,6 +8,7 @@
         <sourceTestOutputDir name="target/generated-test-sources/test-annotations" />
         <outputRelativeToContentRoot value="true" />
         <module name="Eureka-Server" />
+
       </profile>
       <profile name="Annotation profile for MarketPlace-Service" enabled="true">
         <sourceOutputDir name="target/generated-sources/annotations" />
@@ -35,6 +36,9 @@
         <processorPath useClasspath="false">
           <entry name="$MAVEN_REPOSITORY$/org/projectlombok/lombok/1.18.30/lombok-1.18.30.jar" />
         </processorPath>
+        <module name="Formation-Service" />
+        <module name="MarketPlace-Service" />
+        <module name="Event-Service" />
 
 
       </profile>
@@ -52,6 +56,7 @@
 
         <module name="User-Service" />
         <module name="Camping-Service" />
+
         <module name="Event-Service" />
 
 
