@@ -18,6 +18,8 @@ public class Favoris {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     Long idFavoris;
+    Long idUser;
+    Long idProduit;
 
 
 

@@ -23,7 +23,7 @@ public class FavorisController {
     }
 
     @PostMapping("/addFavoris")
-    public Favoris addFavoris(Favoris favoris) {
+    public Favoris addFavoris(@RequestBody Favoris favoris) {
         return iFavorisService.addFavoris(favoris);
     }
 
@@ -40,5 +40,10 @@ public class FavorisController {
     @DeleteMapping("/delete/{idFavoris}")
     public void removeFavoris(@PathVariable long idFavoris) {
         iFavorisService.removeFavoris(idFavoris);
+    }
+
+    @GetMapping("/getByUserId/{userId}")
+    public List<Favoris> retrieveFavorisByUserId(@PathVariable Long userId) {
+        return iFavorisService.retrieveFavorisByUserId(userId);
     }
 }

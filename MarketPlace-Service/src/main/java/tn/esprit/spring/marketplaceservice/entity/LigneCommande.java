@@ -23,15 +23,14 @@ public class LigneCommande {
         Long quantite;
         Double prix;
 
-        @JsonIgnore
         @ManyToOne
         Produit produit;
 
-        @JsonIgnore
+
         @ManyToOne
         Commande commande;
 
-        @JsonIgnore
+
         @ManyToOne
         Panier panier;
 
