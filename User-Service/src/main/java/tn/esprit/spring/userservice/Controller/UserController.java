@@ -76,6 +76,7 @@ public class UserController {
             throw new RuntimeException(e);
         }
     }
+
     @GetMapping("/{id}")
     public ResponseEntity<?> getUserById(@PathVariable Long id) {
         try {
@@ -85,6 +86,9 @@ public class UserController {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body("User not found with ID: " + id);
         }
     }
+
+
+
     @PutMapping("/verify/{id}")
     public ResponseEntity<?> verifyUser(@PathVariable Long id) {
         try {
