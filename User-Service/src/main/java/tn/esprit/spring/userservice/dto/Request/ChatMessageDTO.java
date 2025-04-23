@@ -19,4 +19,5 @@ public class ChatMessageDTO {
     private Date timestamp;
     @JsonProperty("isRead") // Explicitly specify the JSON property name
     private boolean isRead;
+
 }

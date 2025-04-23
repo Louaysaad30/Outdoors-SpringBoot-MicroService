@@ -170,7 +170,6 @@ public class UserServiceIMPL implements UserService {
     @Override
     public String predictChurn(Long userId) {
         UserDetailDTO dto = getUserDetailDTOByUserId(userId);
-
         try {
             RestTemplate restTemplate = new RestTemplate();
             HttpHeaders headers = new HttpHeaders();

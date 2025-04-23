@@ -38,7 +38,7 @@ public class ChatMessage {
     private User recipient;
     private String content;
     private Date timestamp;
-
     @JsonProperty("isRead") // Explicitly specify the JSON property name
     private boolean isRead;
+
 }

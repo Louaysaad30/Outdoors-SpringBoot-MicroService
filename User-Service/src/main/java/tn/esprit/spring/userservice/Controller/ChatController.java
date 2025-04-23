@@ -6,6 +6,7 @@ import org.cloudinary.json.JSONObject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.context.event.EventListener;
+import org.springframework.http.MediaType;
 import org.springframework.messaging.handler.annotation.Payload;
 import org.springframework.messaging.handler.annotation.SendTo;
 import org.springframework.messaging.simp.stomp.StompHeaderAccessor;
@@ -278,16 +279,18 @@ public class ChatController {
         }
     }
 
-    @PostMapping("/add")
+    @PostMapping(value = "/add", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     public ResponseEntity<?> addChatMessage(@RequestBody ChatMessage chatMessage) {
         try {
             System.out.println("🚨 Appel à /add avec message: " + chatMessage.getContent());
 
+            // Validate sender and recipient
             if (chatMessage.getSender() == null || chatMessage.getRecipient() == null) {
                 return ResponseEntity.status(HttpStatus.BAD_REQUEST)
                         .body("Sender or recipient cannot be null.");
             }
 
+            // Call the service to save the chat message
             ChatMessage savedMessage = chatMessageService.save(chatMessage);
 
             return ResponseEntity.status(HttpStatus.CREATED).body(savedMessage);
@@ -301,6 +304,7 @@ public class ChatController {
                     .body("Unexpected error: " + e.getMessage());
         }
     }
+
     @GetMapping("/messages/room/{chatRoomId}")
     public ResponseEntity<?> getMessagesByChatRoomId(@PathVariable Long chatRoomId) {
         try {
@@ -320,21 +324,28 @@ public class ChatController {
     // Example of WebSocket handler for message read
     @MessageMapping("/readMessage")
     public void handleMessageRead(@Payload String payload) {
-        // Parse the payload (assuming it's a JSON string)
         try {
             JSONObject jsonObject = new JSONObject(payload);
             Long messageId = jsonObject.getLong("messageId");
             Long senderId = jsonObject.getLong("senderId");
 
-            // Send a notification to the sender
-            messagingTemplate.convertAndSendToUser(
-                    senderId.toString(), "/queue/notifications",
-                    "Message read by recipient: " + messageId);
-        } catch (JSONException e) {
+            // 1. Update in database
+            chatMessageService.markMessageAsRead(messageId);
+
+            // 2. Send read receipt to sender
+            messagingTemplate.convertAndSend(
+
+                    "/queue/read-receipts",
+                    Map.of(
+                            "type", "message-read",
+                            "messageId", messageId
+                    )
+            );
+
+            System.out.println("Sent read receipt for message: " + messageId);
+        } catch (Exception e) {
             e.printStackTrace();
-            // Handle error parsing the JSON payload
         }
     }
-
 
 }
