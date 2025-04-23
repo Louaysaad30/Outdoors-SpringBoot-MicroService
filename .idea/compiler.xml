@@ -8,7 +8,6 @@
         <sourceTestOutputDir name="target/generated-test-sources/test-annotations" />
         <outputRelativeToContentRoot value="true" />
         <module name="Eureka-Server" />
-
       </profile>
       <profile name="Annotation profile for Transport-Service" enabled="true">
         <sourceOutputDir name="target/generated-sources/annotations" />
@@ -17,6 +16,7 @@
         <processorPath useClasspath="false">
           <entry name="$MAVEN_REPOSITORY$/org/projectlombok/lombok/unknown/lombok-unknown.jar" />
         </processorPath>
+
         <module name="Formation-Service" />
 
         
@@ -48,7 +48,7 @@
         <sourceTestOutputDir name="target/generated-test-sources/test-annotations" />
         <outputRelativeToContentRoot value="true" />
         <processorPath useClasspath="false">
-          <entry name="$MAVEN_REPOSITORY$/org/projectlombok/lombok/1.18.36/lombok-1.18.36.jar" />
+          <entry name="$MAVEN_REPOSITORY$/org/projectlombok/lombok/1.18.30/lombok-1.18.30.jar" />
         </processorPath>
         <module name="Formation-Service" />
         <module name="MarketPlace-Service" />
@@ -57,20 +57,20 @@
         <module name="User-Service" />
         <module name="Camping-Service" />
         <module name="Event-Service" />
+
       </profile>
     </annotationProcessing>
   </component>
   <component name="JavacSettings">
     <option name="ADDITIONAL_OPTIONS_OVERRIDE">
       <module name="Camping-Service" options="-parameters" />
-      <module name="Eureka-Server" options="-parameters" /
-
-      <module name="Event-Service" options="" />
+      <module name="Eureka-Server" options="-parameters" />
+      <module name="Event-Service" options="-parameters" />
       <module name="Formation-Service" options="-parameters" />
-      <module name="Forum-Service" options="" />
-      <module name="MarketPlace-Service" options="" />
-      <module name="Transport-Service" options="" />
-      <module name="User-Service" options="" />
+      <module name="Forum-Service" options="-parameters" />
+      <module name="MarketPlace-Service" options="-parameters" />
+      <module name="Transport-Service" options="-parameters" />
+      <module name="User-Service" options="-parameters" />
 
 
     </option>

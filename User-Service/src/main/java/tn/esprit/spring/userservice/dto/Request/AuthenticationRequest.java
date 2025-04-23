@@ -21,4 +21,6 @@ public class AuthenticationRequest {
     @NotBlank(message = "mdp is required")
     @Size(min =8 ,message = "mdp minimun 8 caractéres")
     String motDePasse;
+    String recaptchaToken; // <-- ajouté
+
 }
