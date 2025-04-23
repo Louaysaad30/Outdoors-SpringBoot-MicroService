@@ -27,6 +27,8 @@
 
       <profile name="Annotation profile for Formation-Service" enabled="true">
       </profile>
+      <profile name="Annotation profile for Camping-Service" enabled="true">
+
       <profile name="Annotation profile for MarketPlace-Service" enabled="true">
       </profile>
       <profile name="Annotation profile for Forum-Service" enabled="true">
@@ -56,6 +58,7 @@
 
         <module name="User-Service" />
         <module name="Camping-Service" />
+
 
         <module name="Event-Service" />
 

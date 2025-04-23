@@ -12,4 +12,8 @@ public interface ITicketService {
     Ticket updateTicket(Ticket ticket);
     void deleteTicket(Long id);
     List<Ticket> getTicketsByEventId(Long eventId);
+// Add to ITicketService.java
+Ticket applyDiscount(Long ticketId, String code, Double percentage);
+Double calculateDiscountedPrice(Ticket ticket);
+
 }
