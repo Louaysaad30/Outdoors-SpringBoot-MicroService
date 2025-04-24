@@ -1,4 +1,5 @@
 package tn.esprit.spring.userservice.Service.IMPL;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import jakarta.transaction.Transactional;
 import lombok.AllArgsConstructor;
 import org.springframework.http.*;
@@ -23,6 +24,7 @@ import java.io.IOException;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 import java.time.YearMonth;
 
@@ -171,6 +173,11 @@ public class UserServiceIMPL implements UserService {
     public String predictChurn(Long userId) {
         UserDetailDTO dto = getUserDetailDTOByUserId(userId);
         try {
+            // Convert the DTO to JSON for logging
+            ObjectMapper objectMapper = new ObjectMapper();
+            String json = objectMapper.writeValueAsString(dto);
+            System.out.println("Request Data (JSON): " + json);
+
             RestTemplate restTemplate = new RestTemplate();
             HttpHeaders headers = new HttpHeaders();
             headers.setContentType(MediaType.APPLICATION_JSON);
@@ -188,9 +195,48 @@ public class UserServiceIMPL implements UserService {
             throw new RuntimeException("Error calling ML server: " + e.getMessage());
         }
     }
+    @Override
+    public Map<String, Long> getChurnStatistics() {
+        List<User> users = userRepository.findAll(); // Fetch all users
+        long churnCount = 0;
+        long notChurnCount = 0;
 
+        for (User user : users) {
+            try {
+                String result = predictChurn(user.getId()); // Call predictChurn for each user
+                if (result.contains("\"prediction\": 1")) {
+                    churnCount++;
+                } else if (result.contains("\"prediction\": 0")) {
+                    notChurnCount++;
+                }
+            } catch (Exception e) {
+                System.err.println("Error predicting churn for user ID: " + user.getId() + " - " + e.getMessage());
+            }
+        }
 
+        // Return the statistics as a map
+        return Map.of(
+                "churn", churnCount,
+                "notChurn", notChurnCount
+        );
+    }
+    public void sendEmailToChurnUsers() {
+        List<User> users = userRepository.findAll(); // Fetch all users
 
+        for (User user : users) {
+            try {
+                String result = predictChurn(user.getId()); // Call predictChurn for each user
+                if (result.contains("\"prediction\": 1")) {
+                    // Send email to the user
+                    String subject = "We Miss You!";
+                    String message = "We noticed you haven't been active lately. Come back and check out what's new!";
+                    emailService.sendEmail(user.getEmail(), user.getNom(), EmailTemplateName.CHURN_EMAIL, null, message, subject);
+                }
+            } catch (Exception e) {
+                System.err.println("Error predicting churn for user ID: " + user.getId() + " - " + e.getMessage());
+            }
+        }
+    }
     public void incrementSessionStats(Long userId) {
         UserDetail userDetail = userDetailRepository.findByUserId(userId)
                 .orElseThrow(() -> new RuntimeException("UserDetail not found"));
