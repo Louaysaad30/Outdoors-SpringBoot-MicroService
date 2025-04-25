@@ -12,16 +12,19 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 import tn.esprit.spring.formationservice.dto.FormationRequest;
 import tn.esprit.spring.formationservice.entity.Formation;
+import tn.esprit.spring.formationservice.entity.Sponsor;
 import tn.esprit.spring.formationservice.services.interfaces.IFormationService;
 
 import java.io.IOException;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
+import java.util.Optional;
 
 @RestController
 @RequestMapping("/api/formations")
 @RequiredArgsConstructor
 @Tag(name = "Formation Management")
-@CrossOrigin(origins = "*")
 public class FormationController {
 
     private final IFormationService formationService;
@@ -64,4 +67,30 @@ public class FormationController {
         formationService.deleteFormation(id);
         return new ResponseEntity<>(HttpStatus.NO_CONTENT);
     }
+
+    @PostMapping("/improve-description")
+    public ResponseEntity<String> improveDescription(@RequestBody Map<String, String> body) {
+        String input = body.get("text");
+        if (input == null || input.trim().isEmpty()) {
+            return ResponseEntity.badRequest().body("Texte requis");
+        }
+        // Appelle le service
+        String improved = formationService.generateBetterDescription(input);
+        return ResponseEntity.ok(improved);
+    }
+
+
+    @PostMapping("/suggest-sponsor")
+    public ResponseEntity<Map<String, Object>> suggestSponsor(@RequestBody Map<String, Object> payload) {
+        String description = (String) payload.get("description");
+        Double prix = Double.parseDouble(payload.get("prix").toString());
+        String mode = (String) payload.get("mode");
+        String lieu = (String) payload.get("lieu");
+
+        Optional<Sponsor> sponsorOpt = formationService.suggestSponsorForFormation(description);
+        Map<String, Object> response = new HashMap<>();
+        sponsorOpt.ifPresent(s -> response.put("sponsorId", s.getId()));
+        return ResponseEntity.ok(response);
+    }
+
 }

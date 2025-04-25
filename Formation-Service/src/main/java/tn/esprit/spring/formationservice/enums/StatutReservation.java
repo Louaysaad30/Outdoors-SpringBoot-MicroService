@@ -1,4 +1,4 @@
-package tn.esprit.spring.formationservice.entity;
+package tn.esprit.spring.formationservice.enums;
 
 public enum StatutReservation {
     EN_ATTENTE,

@@ -12,6 +12,8 @@ import tn.esprit.spring.formationservice.repository.FormationRepository;
 import tn.esprit.spring.formationservice.repository.SponsorRepository;
 import tn.esprit.spring.formationservice.services.interfaces.ICloudinaryService;
 import tn.esprit.spring.formationservice.services.interfaces.IFormationService;
+import tn.esprit.spring.formationservice.services.interfaces.IHuggingFaceService;
+import tn.esprit.spring.formationservice.services.interfaces.ISponsorService;
 
 import java.io.IOException;
 import java.time.LocalDateTime;
@@ -26,6 +28,8 @@ public class FormationServiceImpl implements IFormationService {
     private final CategorieRepository categorieRepository;
     private final SponsorRepository sponsorRepository;
     private final ICloudinaryService cloudinaryService;
+    private final ISponsorService sponsorService;
+    private final IHuggingFaceService huggingFaceService;
 
     @Override
     public Formation addFormation(FormationRequest request, MultipartFile imageFile) throws IOException {
@@ -50,10 +54,11 @@ public class FormationServiceImpl implements IFormationService {
 
         // Si mode en ligne, ajouter le lien meet
         if ("enligne".equalsIgnoreCase(request.getMode())) {
-            formationBuilder.meetLink("https://meet.google.com/new"); // Peut être généré dynamiquement
+            formationBuilder.meetLink(request.getMeetLink());
         } else {
             formationBuilder.lieu(request.getLieu());
         }
+
 
         // Pause optionnelle
         if (request.getPauseTitle() != null && request.getPauseDuration() != null) {
@@ -89,4 +94,15 @@ public class FormationServiceImpl implements IFormationService {
     public void deleteFormation(Long id) {
         formationRepository.deleteById(id);
     }
+
+    @Override
+    public Optional<Sponsor> suggestSponsorForFormation(String description) {
+        return sponsorService.suggestBestSponsor(description);
+    }
+
+    @Override
+    public String generateBetterDescription(String rawText) {
+        return huggingFaceService.generateBetterDescription(rawText);
+    }
+
 }

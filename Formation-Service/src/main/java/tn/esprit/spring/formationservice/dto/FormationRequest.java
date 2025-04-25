@@ -1,7 +1,6 @@
 package tn.esprit.spring.formationservice.dto;
 
 import lombok.Data;
-
 import java.time.LocalDateTime;
 
 @Data
@@ -19,4 +18,5 @@ public class FormationRequest {
     private Integer pauseDuration;
     private boolean pauseSponsorRequired;
     private Long sponsorId;
+    private String meetLink;
 }

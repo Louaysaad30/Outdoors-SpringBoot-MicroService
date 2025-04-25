@@ -3,6 +3,8 @@ package tn.esprit.spring.formationservice.entity;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import jakarta.persistence.*;
 import lombok.*;
+import tn.esprit.spring.formationservice.enums.StatutReservation;
+
 import java.time.LocalDateTime;
 
 @Entity
