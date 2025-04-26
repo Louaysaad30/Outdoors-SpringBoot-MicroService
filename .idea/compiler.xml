@@ -10,6 +10,7 @@
         <module name="Eureka-Server" />
 
       </profile>
+
       <profile name="Annotation profile for MarketPlace-Service" enabled="true">
         <sourceOutputDir name="target/generated-sources/annotations" />
         <sourceTestOutputDir name="target/generated-test-sources/test-annotations" />
@@ -20,6 +21,7 @@
         <module name="Formation-Service" />
 
         <module name="MarketPlace-Service" />
+
         <module name="Event-Service" />
         <module name="User-Service" />
         <module name="Camping-Service" />
@@ -41,6 +43,8 @@
         <module name="Formation-Service" />
         <module name="MarketPlace-Service" />
         <module name="Event-Service" />
+        <module name="Camping-Service" />
+        <module name="User-Service" />
 
 
       </profile>
