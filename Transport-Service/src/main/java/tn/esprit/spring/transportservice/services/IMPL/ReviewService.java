@@ -61,6 +61,33 @@ public class ReviewService implements IReviewService {
     }
 
 
+    @Override
+    public Review getReviewById(Long id) {
+        return reviewRepository.findById(id).orElse(null);
+    }
+
+    @Override
+    public Review getUserReview(Long vehiculeId, Long userId) {
+        return reviewRepository.findByVehiculeIdAndUserId(vehiculeId, userId).orElse(null);
+    }
+
+    @Override
+    public Review updateReview(Long id, Review reviewDetails) {
+        Review review = reviewRepository.findById(id).orElse(null);
+        if (review == null) {
+            return null;
+        }
+
+        // Update only non-null fields
+        if (reviewDetails.getComment() != null && !reviewDetails.getComment().isEmpty()) {
+            review.setComment(reviewDetails.getComment());
+        }
+        if (reviewDetails.getRating() > 0) {
+            review.setRating(reviewDetails.getRating());
+        }
+
+        return reviewRepository.save(review);
+    }
 
 
 

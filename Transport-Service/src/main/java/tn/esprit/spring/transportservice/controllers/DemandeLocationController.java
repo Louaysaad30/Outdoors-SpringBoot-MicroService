@@ -6,6 +6,8 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import tn.esprit.spring.transportservice.entity.DemandeLocation;
 import tn.esprit.spring.transportservice.services.IMPL.DemandeLocationService;
+
+import java.time.LocalDateTime;
 import java.util.List;
 
 @RestController
@@ -19,6 +21,48 @@ public class DemandeLocationController {
     public DemandeLocationController(DemandeLocationService demandeLocationService) {
         this.demandeLocationService = demandeLocationService;
     }
+
+    @GetMapping("/by-vehicle/{vehicleId}")
+    public ResponseEntity<List<DemandeLocation>> getReservationsByVehicle(@PathVariable Long vehicleId) {
+        return ResponseEntity.ok(demandeLocationService.getDemandeLocationsByVehicle(vehicleId));
+    }
+
+    @GetMapping("/availability")
+    public ResponseEntity<?> checkAvailability(
+            @RequestParam Long vehicleId,
+            @RequestParam String start,
+            @RequestParam String end) {
+        try {
+            LocalDateTime startDate = LocalDateTime.parse(start);
+            LocalDateTime endDate = LocalDateTime.parse(end);
+            boolean available = demandeLocationService.isVehicleAvailable(vehicleId, startDate, endDate);
+            return ResponseEntity.ok(available);
+        } catch (IllegalArgumentException e) {
+            return ResponseEntity.badRequest().body(e.getMessage());
+        } catch (Exception e) {
+            return ResponseEntity.internalServerError().body("Error checking availability");
+        }
+    }
+
+    @PostMapping
+    public ResponseEntity<?> createReservation(@RequestBody DemandeLocation demandeLocation) {
+        try {
+            DemandeLocation saved = demandeLocationService.save(demandeLocation);
+            return ResponseEntity.status(HttpStatus.CREATED).body(saved);
+        } catch (IllegalStateException e) {
+            return ResponseEntity.status(HttpStatus.CONFLICT).body(e.getMessage());
+        } catch (IllegalArgumentException e) {
+            return ResponseEntity.badRequest().body(e.getMessage());
+        } catch (Exception e) {
+            return ResponseEntity.internalServerError().body("Error creating reservation");
+        }
+    }
+
+    @GetMapping("/active/{vehicleId}")
+    public ResponseEntity<List<DemandeLocation>> getActiveReservations(@PathVariable Long vehicleId) {
+        return ResponseEntity.ok(demandeLocationService.findActiveReservations(vehicleId));
+    }
+
 
     // Get all demandes
     @GetMapping
@@ -38,13 +82,6 @@ public class DemandeLocationController {
     public ResponseEntity<DemandeLocation> getDemandeById(@PathVariable Long id) {
         DemandeLocation demandeLocation = demandeLocationService.findById(id);
         return demandeLocation != null ? ResponseEntity.ok(demandeLocation) : ResponseEntity.notFound().build();
-    }
-
-    // Create new demande
-    @PostMapping
-    public ResponseEntity<DemandeLocation> createDemande(@RequestBody DemandeLocation demandeLocation) {
-        DemandeLocation savedDemande = demandeLocationService.save(demandeLocation);
-        return ResponseEntity.status(HttpStatus.CREATED).body(savedDemande);
     }
 
 
