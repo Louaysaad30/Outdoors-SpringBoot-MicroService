@@ -5,7 +5,10 @@ import lombok.Setter;
 
 @Getter
 public enum EmailTemplateName {
-    ACTIVATE_ACCOUNT("activate_account");
+    ACTIVATE_ACCOUNT("activate_account"),
+    RESET_PASSWORD("RESET_PASSWORD"),
+    CONFIRM_EMAIL("CONFIRM_EMAIL"),
+    FAIL("FAIL");
 
     private final String name;
 
