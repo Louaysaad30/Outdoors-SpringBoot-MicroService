@@ -50,4 +50,17 @@ public class EventArea {
 
     @ElementCollection
     private Set<String> keywords = new HashSet<>();
+
+    @Enumerated(EnumType.STRING)
+    private EventAreaStatus status = EventAreaStatus.PENDING;
+
+    private Long userId;
+
+    @Column(columnDefinition = "TEXT")
+    private String rejectionMessage;
+
+    // For backward compatibility
+    public boolean isApproved() {
+        return status == EventAreaStatus.APPROVED;
+    }
 }

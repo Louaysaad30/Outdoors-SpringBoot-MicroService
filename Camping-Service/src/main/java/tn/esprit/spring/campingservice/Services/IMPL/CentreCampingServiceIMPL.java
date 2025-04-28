@@ -7,15 +7,21 @@ import org.springframework.stereotype.Service;
 import org.springframework.util.StringUtils;
 import org.springframework.web.multipart.MultipartFile;
 import tn.esprit.spring.campingservice.Entity.CentreCamping;
+import tn.esprit.spring.campingservice.Entity.Reservation;
 import tn.esprit.spring.campingservice.Repository.CentreCampingRepository;
 import tn.esprit.spring.campingservice.Services.Interfaces.ICentreCampingService;
+import tn.esprit.spring.campingservice.Services.Interfaces.IReservationService;
+import tn.esprit.spring.campingservice.Services.Interfaces.IUserService;
+import tn.esprit.spring.campingservice.dto.UserDto;
 
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 @Service
 @AllArgsConstructor
@@ -24,6 +30,8 @@ public class CentreCampingServiceIMPL implements ICentreCampingService {
 
     private final Cloudinary cloudinary;
     private CentreCampingRepository centreCampingRepository;
+
+    private IUserService userService;
 
     @Override
     public List<CentreCamping> retrieveAllCentreCamping() {
@@ -44,6 +52,9 @@ public class CentreCampingServiceIMPL implements ICentreCampingService {
             existingCentreCamping.setName(centreCamping.getName());
             existingCentreCamping.setCapcite(centreCamping.getCapcite());
             existingCentreCamping.setImage(centreCamping.getImage());
+            existingCentreCamping.setNumTel(centreCamping.getNumTel());
+            existingCentreCamping.setAddress(centreCamping.getAddress());
+
             // Update other fields as necessary
             return centreCampingRepository.save(existingCentreCamping);
         } else {
@@ -102,5 +113,7 @@ public class CentreCampingServiceIMPL implements ICentreCampingService {
             return null;
         }
     }
+
+
 
 }

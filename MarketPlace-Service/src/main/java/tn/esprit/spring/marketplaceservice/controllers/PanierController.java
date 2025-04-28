@@ -25,7 +25,7 @@ public class PanierController {
     }
 
     @PostMapping("/addPanier")
-    public Panier addPanier(Panier panier) {
+    public Panier addPanier(@RequestBody Panier panier) {
         return iPanierService.addPanier(panier);
     }
 
@@ -64,6 +64,21 @@ public class PanierController {
 
             Panier updatedPanier = iPanierService.updateTotal(id, newTotal);
             return ResponseEntity.ok(updatedPanier);
+        } catch (Exception e) {
+            return ResponseEntity.badRequest().build();
+        }
+    }
+
+    @GetMapping("/getAllPaniersByUserId/{userId}")
+    public List<Panier> getAllPaniersByUserId(@PathVariable Long userId) {
+        return iPanierService.getAllPaniersByUserId(userId);
+    }
+
+    @PutMapping("/validatePanier/{panierId}")
+    public ResponseEntity<Panier> validatePanier(@PathVariable Long panierId) {
+        try {
+            Panier validatedPanier = iPanierService.validatePanier(panierId);
+            return ResponseEntity.ok(validatedPanier);
         } catch (Exception e) {
             return ResponseEntity.badRequest().build();
         }

@@ -8,9 +8,11 @@ import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 import tn.esprit.spring.userservice.Entity.Role;
+import tn.esprit.spring.userservice.Enum.Etat;
 
 import java.time.LocalDate;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -35,19 +37,28 @@ public class User  implements UserDetails {
     int tel;
     LocalDate dateNaissance;
     private String location;
-
-    @ManyToMany
+    @Enumerated(EnumType.STRING)
+    Etat etat;
+    @ManyToMany(fetch = FetchType.EAGER)
     @JsonIgnore
     List<Role> roles;
     boolean accountLocked;
     boolean enabled;
+    @JsonIgnore
+    @OneToOne(mappedBy = "user", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+    UserDetail userDetail;
     @Override
+    //@JsonIgnore
     public Collection<? extends GrantedAuthority> getAuthorities() {
-        List<SimpleGrantedAuthority> authorities = roles.stream()
+        if (roles == null) {
+            return Collections.emptyList(); // avoids the NPE
+        }
+
+        return roles.stream()
                 .map(role -> new SimpleGrantedAuthority(role.getRoleType().toString()))
                 .collect(Collectors.toList());
-        return authorities;
     }
+
 
     @Override
     public String getPassword() {

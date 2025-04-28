@@ -14,6 +14,8 @@ public interface PostService {
 
     Post getPostById(UUID id);
     List<Post> getAllPosts();
+    Post updatePostWithMedia(UUID postId, String content, List<Media> newMedia, List<UUID> mediaToDelete);
+
     Post updatePost(UUID id, Post post);
     void deletePost(UUID id);
     List<Post> getPostsByUser(Integer userId);

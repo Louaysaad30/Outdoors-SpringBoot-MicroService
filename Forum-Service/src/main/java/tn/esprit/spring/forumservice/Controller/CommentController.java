@@ -7,9 +7,13 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiParam;
+import tn.esprit.spring.forumservice.Service.IMPL.UserService;
 import tn.esprit.spring.forumservice.Service.Interfaces.CommentService;
 import tn.esprit.spring.forumservice.entity.Comment;
+import tn.esprit.spring.forumservice.entity.Post;
+import tn.esprit.spring.forumservice.entity.UserDtoForum;
 
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
@@ -21,6 +25,7 @@ import java.util.UUID;
 public class CommentController {
 
     private final CommentService commentService;
+    private final UserService userService;
 
     @PostMapping("/{postId}")
     public ResponseEntity<?> addCommentToPost(
@@ -89,4 +94,24 @@ public ResponseEntity<List<Comment>> getTopLevelComments(@PathVariable UUID post
     List<Comment> topLevelComments = commentService.getTopLevelComments(postId);
     return ResponseEntity.ok(topLevelComments);
 }
+
+@PostMapping("/{commentId}/user-details")
+    public ResponseEntity<?> getCommentWithUserDetails(@PathVariable("commentId") UUID commentId) {
+        try {
+            Comment comment = commentService.getCommentById(commentId);
+            UserDtoForum user = userService.getUserDetails(comment.getUserId().longValue());
+
+            Map<String, Object> response = new HashMap<>();
+            response.put("comment", comment);
+            response.put("user", user);
+
+            return ResponseEntity.ok(response);
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body(Map.of("error", e.getMessage()));
+        }
+    }
+
+
+
 }

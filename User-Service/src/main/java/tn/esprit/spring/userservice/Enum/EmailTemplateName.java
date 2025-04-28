@@ -7,7 +7,9 @@ import lombok.Setter;
 public enum EmailTemplateName {
     ACTIVATE_ACCOUNT("activate_account"),
     RESET_PASSWORD("RESET_PASSWORD"),
-    CONFIRM_EMAIL("CONFIRM_EMAIL");
+    CONFIRM_EMAIL("CONFIRM_EMAIL"),
+    FAIL("FAIL"),
+    CHURN_EMAIL("CHURN_EMAIL");
 
     private final String name;
 

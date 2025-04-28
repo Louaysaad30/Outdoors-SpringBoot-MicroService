@@ -2,6 +2,7 @@ package tn.esprit.spring.forumservice.Service.IMPL;
 
            import com.cloudinary.Cloudinary;
            import com.cloudinary.utils.ObjectUtils;
+           import jakarta.transaction.Transactional;
            import lombok.RequiredArgsConstructor;
            import org.springframework.http.HttpEntity;
            import org.springframework.http.HttpHeaders;
@@ -73,6 +74,90 @@ public Post createPost(Post post) {
                    existingPost.setHasMedia(post.getHasMedia());
                    return postRepository.save(existingPost);
                }
+
+               @Override
+// In your PostService implementation class
+@Transactional
+public Post updatePostWithMedia(UUID postId, String content, List<Media> newMediaItems, List<UUID> mediaToDelete) {
+    Post post = getPostById(postId);
+    if (post == null) {
+        throw new RuntimeException("Post not found");
+    }
+
+    // Update content if provided
+    if (content != null) {
+        post.setContent(content);
+    }
+
+    // Delete media items if specified
+    if (mediaToDelete != null && !mediaToDelete.isEmpty()) {
+        // Get current media from post
+        List<Media> currentMedia = post.getMedia();
+        if (currentMedia != null) {
+            // Create a list for media to be removed
+            List<Media> mediaToRemove = new ArrayList<>();
+
+            // Find media items to remove
+            for (Media media : currentMedia) {
+                if (mediaToDelete.contains(media.getId())) {
+                    mediaToRemove.add(media);
+
+                    // Optional: Delete from Cloudinary if needed
+                    // You might need to extract the public ID from the URL
+                    try {
+                        String publicId = extractPublicIdFromUrl(media.getMediaUrl());
+                        cloudinary.uploader().destroy(publicId, ObjectUtils.emptyMap());
+                    } catch (Exception e) {
+                    }
+                }
+            }
+
+            // Remove media from post
+            currentMedia.removeAll(mediaToRemove);
+
+            // Delete media entities from database
+            for (Media media : mediaToRemove) {
+                mediaRepository.deleteById(media.getId());
+            }
+        }
+    }
+
+    // Add new media items if provided
+    if (newMediaItems != null && !newMediaItems.isEmpty()) {
+        for (Media media : newMediaItems) {
+            media.setPost(post);
+            mediaRepository.save(media);
+
+            // Ensure the post has a media list
+            if (post.getMedia() == null) {
+                post.setMedia(new ArrayList<>());
+            }
+            post.getMedia().add(media);
+        }
+    }
+
+    // Update hasMedia flag based on whether the post has any media after updates
+    post.setHasMedia(post.getMedia() != null && !post.getMedia().isEmpty());
+
+    return postRepository.save(post);
+}
+
+// Helper method to extract public ID from Cloudinary URL
+private String extractPublicIdFromUrl(String url) {
+    // Example URL: http://res.cloudinary.com/dyqpawixh/image/upload/v1745065527/ikfu59a2u0ewck5kcknq.jpg
+    // Extract: ikfu59a2u0ewck5kcknq
+
+    int lastSlashIndex = url.lastIndexOf('/');
+    int dotIndex = url.lastIndexOf('.');
+
+    if (lastSlashIndex != -1 && dotIndex != -1 && dotIndex > lastSlashIndex) {
+        return url.substring(lastSlashIndex + 1, dotIndex);
+    }
+
+    return null;
+}
+
+
 
                @Override
                public void deletePost(UUID id) {
