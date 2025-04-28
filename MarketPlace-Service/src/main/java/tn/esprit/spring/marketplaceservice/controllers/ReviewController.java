@@ -41,7 +41,7 @@ public class ReviewController {
 
         // Récupérer toutes les revues depuis la base de données
         List<Review> allReviews = reviewService.getAllReviews();
-        //test
+        //tes
         // Traiter chaque revue
         for (Review review : allReviews) {
             ReviewResponseDTO response = new ReviewResponseDTO();
