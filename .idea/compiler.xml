@@ -9,6 +9,7 @@
         <outputRelativeToContentRoot value="true" />
         <module name="Eureka-Server" />
 
+
       </profile>
       <profile name="Annotation profile for Camping-Service" enabled="true">
 
@@ -58,6 +59,7 @@
         <outputRelativeToContentRoot value="true" />
         <processorPath useClasspath="false">
 
+
           <entry name="$MAVEN_REPOSITORY$/org/projectlombok/lombok/1.18.30/lombok-1.18.30.jar" />
 
         </processorPath>
@@ -70,6 +72,7 @@
 
 
         <module name="Event-Service" />
+
 
 
 
