@@ -10,6 +10,8 @@
         <module name="Eureka-Server" />
 
       </profile>
+      <profile name="Annotation profile for Camping-Service" enabled="true">
+
 
       <profile name="Annotation profile for MarketPlace-Service" enabled="true">
         <sourceOutputDir name="target/generated-sources/annotations" />
@@ -26,6 +28,8 @@
         <module name="User-Service" />
         <module name="Camping-Service" />
       </profile>
+      <profile name="Annotation profile for Transport-Service" enabled="true">
+
 
       <profile name="Annotation profile for Formation-Service" enabled="true">
       </profile>
@@ -58,6 +62,7 @@
 
         </processorPath>
         <module name="Transport-Service" />
+
         <module name="Forum-Service" />
 
         <module name="User-Service" />
@@ -65,6 +70,7 @@
 
 
         <module name="Event-Service" />
+
 
 
       </profile>
