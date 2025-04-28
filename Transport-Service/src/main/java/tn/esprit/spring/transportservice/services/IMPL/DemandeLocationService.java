@@ -1,5 +1,6 @@
 package tn.esprit.spring.transportservice.services.IMPL;
 
+import jakarta.transaction.Transactional;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import tn.esprit.spring.transportservice.entity.DemandeLocation;
@@ -40,6 +41,7 @@ public class DemandeLocationService implements IDemandeLocationService {
     }
 
     @Override
+    @Transactional
     public DemandeLocation save(DemandeLocation demandeLocation) {
         validateDemandeLocation(demandeLocation);
 
@@ -66,12 +68,15 @@ public class DemandeLocationService implements IDemandeLocationService {
             demandeLocation.setStatut(DemandeLocation.StatutDemande.EN_ATTENTE);
         }
 
-        calculatePrixTotal(demandeLocation);
+        long nbJours = ChronoUnit.DAYS.between(demandeLocation.getDebutLocation(), demandeLocation.getFinLocation());
+        double prixTotal = nbJours * vehicule.getPrixParJour();
+        demandeLocation.setPrixTotal(prixTotal);
+
+        demandeLocation.setVehicule(vehicule);
+
 
         return demandeLocationRepository.save(demandeLocation);
     }
-
-
 
 
     @Override
