@@ -9,4 +9,6 @@ import java.util.List;
 public interface CommandeRepository extends JpaRepository<Commande,Long> {
 
     List<Commande> findByUserIdAndEtat(Long userId, Status etat);
+    List<Commande> findByUserId(Long userId);
+    List<Commande> findByLivraisonIdLivraison(Long idLivraison);
 }

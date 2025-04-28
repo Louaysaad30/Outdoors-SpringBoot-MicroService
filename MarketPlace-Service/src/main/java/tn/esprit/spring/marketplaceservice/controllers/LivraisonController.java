@@ -3,6 +3,7 @@ package tn.esprit.spring.marketplaceservice.controllers;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.AllArgsConstructor;
 import org.springframework.web.bind.annotation.*;
+import tn.esprit.spring.marketplaceservice.DTO.DeliveryStatusUpdateDto;
 import tn.esprit.spring.marketplaceservice.entity.Livraison;
 import tn.esprit.spring.marketplaceservice.services.interfaces.ILivraisonService;
 
@@ -21,7 +22,7 @@ public class LivraisonController {
     }
 
     @PostMapping("/addLivraison")
-    public Livraison addLivraison(Livraison livraison) {
+    public Livraison addLivraison(@RequestBody Livraison livraison) {
         return iLivraisonService.addLivraison(livraison);
     }
 
@@ -38,5 +39,13 @@ public class LivraisonController {
     @DeleteMapping("/delete/{idLivraison}")
     public void removeLivraison(@PathVariable long idLivraison) {
         iLivraisonService.removeLivraison(idLivraison);
+    }
+    @GetMapping("/getByLivreurId/{livreurId}")
+    public List<Livraison> findByLivreurId(@PathVariable Long livreurId) {
+        return iLivraisonService.findByLivreurId(livreurId);
+    }
+    @PutMapping("/updateLivraisonStatus/{idLivraison}")
+    public Livraison updateLivraisonStatus(@PathVariable Long idLivraison, @RequestBody DeliveryStatusUpdateDto dto) {
+        return iLivraisonService.updateLivraisonStatus(idLivraison, dto);
     }
 }

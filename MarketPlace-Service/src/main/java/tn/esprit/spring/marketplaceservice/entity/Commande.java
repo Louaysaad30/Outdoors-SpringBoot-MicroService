@@ -35,6 +35,7 @@ public class Commande {
         @Enumerated(EnumType.STRING)
         Status etat;
         String OrderNumber;
+        String paymentMethod;
 
 
 
@@ -42,7 +43,7 @@ public class Commande {
         @OneToMany(mappedBy = "commande")
         private List<LigneCommande> ligneCommande;
 
-        @JsonIgnore
+
         @ManyToOne
         Livraison livraison;
 }

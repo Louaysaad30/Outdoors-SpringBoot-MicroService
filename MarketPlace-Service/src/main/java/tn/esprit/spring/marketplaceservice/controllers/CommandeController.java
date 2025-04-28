@@ -11,8 +11,10 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.util.StreamUtils;
 import org.springframework.web.bind.annotation.*;
+import tn.esprit.spring.marketplaceservice.DTO.UpdateStateCommand;
 import tn.esprit.spring.marketplaceservice.entity.Commande;
 import tn.esprit.spring.marketplaceservice.entity.LigneCommande;
+import tn.esprit.spring.marketplaceservice.entity.Livraison;
 import tn.esprit.spring.marketplaceservice.entity.Status;
 import tn.esprit.spring.marketplaceservice.services.IMPL.LigneCommandeServiceIMPL;
 import tn.esprit.spring.marketplaceservice.services.interfaces.ICommandeService;
@@ -543,4 +545,28 @@ public class CommandeController {
     public List<String> getProductNamesByCommandeId(@PathVariable Long commandeId) {
         return iCommandeService.getProductNamesByCommandeId(commandeId);
     }
+
+    @PutMapping("/updateStatus/{idCommande}")
+    public Commande updateStatus(@PathVariable Long idCommande, @RequestBody UpdateStateCommand updateStateCommand) {
+        return iCommandeService.updateCommandeStatus(idCommande, updateStateCommand);
+
+    }
+
+    @GetMapping("/getByUserId/{userId}")
+    public List<Commande> getByUserId(@PathVariable Long userId) {
+        return iCommandeService.findByUserId(userId);
+    }
+
+    @PutMapping("/affecterLivreurACommande/{commandeId}/{livraisonId}")
+    public Commande affecterLivreurACommande(@PathVariable Long commandeId, @PathVariable Long livraisonId) {
+        return iCommandeService.affecterLivreurACommande(commandeId, livraisonId);
+    }
+
+    @GetMapping("/getByLivraisonId/{idLivraison}")
+    public List<Commande> getByLivraisonId(@PathVariable Long idLivraison) {
+        return iCommandeService.findByLivraisonIdLivraison(idLivraison);
+    }
+
+
+
 }

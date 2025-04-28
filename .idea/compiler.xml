@@ -22,8 +22,8 @@
           <entry name="$MAVEN_REPOSITORY$/org/projectlombok/lombok/1.18.30/lombok-1.18.30.jar" />
         </processorPath>
         <module name="Formation-Service" />
-
         <module name="MarketPlace-Service" />
+        <module name="Transport-Service" />
 
         <module name="Event-Service" />
         <module name="User-Service" />
@@ -89,7 +89,6 @@
       <module name="MarketPlace-Service" options="-parameters" />
       <module name="Transport-Service" options="-parameters" />
       <module name="User-Service" options="-parameters" />
-
     </option>
   </component>
 </project>
