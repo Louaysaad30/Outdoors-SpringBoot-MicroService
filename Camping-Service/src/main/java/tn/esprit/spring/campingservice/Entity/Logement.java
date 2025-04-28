@@ -1,5 +1,6 @@
 package tn.esprit.spring.campingservice.Entity;
 
+import com.fasterxml.jackson.annotation.JsonBackReference;
 import jakarta.persistence.*;
 import lombok.*;
 import lombok.experimental.FieldDefaults;
@@ -18,13 +19,16 @@ public class Logement {
     Long idLogement;
 
     String name;
+    String description;
     int quantity;
     float price;
+
     TypeLogement type;
 
     @Lob
     String image;
 
+    @JsonBackReference
     @ManyToOne
     private CentreCamping centre;
 }

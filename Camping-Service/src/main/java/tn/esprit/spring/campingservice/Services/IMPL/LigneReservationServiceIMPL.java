@@ -38,4 +38,29 @@ public class LigneReservationServiceIMPL implements ILigneReservationService {
     public void removeLigneReservation(Long idLigne) {
         ligneReservationRepository.deleteById(idLigne);
     }
+
+
+
+    // Add this new method
+    public void removeLigneReservationsByReservationId(Long idReservation) {
+        List<LigneReservation> lignes = ligneReservationRepository.findByReservationIdReservation(idReservation);
+        if (!lignes.isEmpty()) {
+            ligneReservationRepository.deleteAll(lignes);
+        }
+    }
+
+    public LigneReservation updateLigneReservationByReservationId(Long idReservation, LigneReservation updatedLigneReservation) {
+        LigneReservation existingLigneReservation = ligneReservationRepository.findByReservationIdReservation(idReservation)
+                .stream()
+                .findFirst()
+                .orElseThrow(() -> new RuntimeException("LigneReservation not found for reservation ID: " + idReservation));
+
+        // Update fields
+        existingLigneReservation.setDateDebut(updatedLigneReservation.getDateDebut());
+        existingLigneReservation.setDateFin(updatedLigneReservation.getDateFin());
+        existingLigneReservation.setQuantite(updatedLigneReservation.getQuantite());
+        existingLigneReservation.setPrix(updatedLigneReservation.getPrix());
+
+        return ligneReservationRepository.save(existingLigneReservation);
+    }
 }
