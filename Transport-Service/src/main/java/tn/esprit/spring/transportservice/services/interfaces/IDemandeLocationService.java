@@ -10,7 +10,6 @@ public interface IDemandeLocationService {
     List<DemandeLocation> getDemandesByUserId(Long userId);
     DemandeLocation findById(Long id);
     DemandeLocation save(DemandeLocation demandeLocation);
-    DemandeLocation update(Long id, DemandeLocation demandeLocationDetails);
     void deleteById(Long id);
     DemandeLocation updateStatut(Long id, DemandeLocation.StatutDemande statut);
     DemandeLocation rejectDemande(Long id, String cause);

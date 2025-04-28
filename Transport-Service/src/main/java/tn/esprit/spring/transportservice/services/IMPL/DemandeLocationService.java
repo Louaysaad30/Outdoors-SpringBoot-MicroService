@@ -35,71 +35,57 @@ public class DemandeLocationService implements IDemandeLocationService {
 
     @Override
     public DemandeLocation findById(Long id) {
-        return demandeLocationRepository.findById(id).orElse(null);
+        return demandeLocationRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("DemandeLocation non trouvée avec l'ID : " + id));
     }
 
     @Override
     public DemandeLocation save(DemandeLocation demandeLocation) {
         validateDemandeLocation(demandeLocation);
 
-        if (!isVehicleAvailable(
-                demandeLocation.getVehicule().getId(),
-                demandeLocation.getDebutLocation(),
-                demandeLocation.getFinLocation())) {
-            throw new RuntimeException("Le véhicule n'est pas disponible pour les dates sélectionnées");
+        if (demandeLocation.getVehicule() == null || demandeLocation.getVehicule().getId() == null) {
+            throw new IllegalArgumentException("Le véhicule ou son identifiant est manquant.");
         }
 
-        calculatePrixTotal(demandeLocation);
+        boolean disponible = isVehicleAvailable(
+                demandeLocation.getVehicule().getId(),
+                demandeLocation.getDebutLocation(),
+                demandeLocation.getFinLocation()
+        );
+
+        if (!disponible) {
+            throw new IllegalStateException("Le véhicule n'est pas disponible pour les dates sélectionnées.");
+        }
+
+        Vehicule vehicule = vehiculeRepository.findById(demandeLocation.getVehicule().getId())
+                .orElseThrow(() -> new RuntimeException("Véhicule non trouvé avec l'ID : " + demandeLocation.getVehicule().getId()));
+
+        demandeLocation.setVehicule(vehicule);
 
         if (demandeLocation.getStatut() == null) {
             demandeLocation.setStatut(DemandeLocation.StatutDemande.EN_ATTENTE);
         }
 
+        calculatePrixTotal(demandeLocation);
+
         return demandeLocationRepository.save(demandeLocation);
     }
+
+
+
 
     @Override
     public boolean isVehicleAvailable(Long vehicleId, LocalDateTime startDate, LocalDateTime endDate) {
         validateDates(startDate, endDate);
 
-        List<DemandeLocation> conflicts = demandeLocationRepository.findConflictingReservations(
-                vehicleId,
-                startDate,
-                endDate);
-
-        return conflicts.stream()
-                .noneMatch(d -> d.getStatut() == DemandeLocation.StatutDemande.APPROUVÉE);
+        List<DemandeLocation> conflictingReservations = demandeLocationRepository.findConflictingReservations(
+                vehicleId, startDate, endDate
+        );
+        return conflictingReservations.stream()
+                .noneMatch(reservation -> reservation.getStatut() == DemandeLocation.StatutDemande.APPROUVÉE);
     }
 
 
-
-    @Override
-    public DemandeLocation update(Long id, DemandeLocation demandeLocationDetails) {
-        DemandeLocation existingDemande = demandeLocationRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Demande non trouvée"));
-
-        existingDemande.setFullName(demandeLocationDetails.getFullName());
-        existingDemande.setPhone(demandeLocationDetails.getPhone());
-        existingDemande.setVehicule(demandeLocationDetails.getVehicule());
-        existingDemande.setDebutLocation(demandeLocationDetails.getDebutLocation());
-        existingDemande.setFinLocation(demandeLocationDetails.getFinLocation());
-        existingDemande.setPickupLocation(demandeLocationDetails.getPickupLocation());
-
-        existingDemande.setPickupLatitude(demandeLocationDetails.getPickupLatitude());
-        existingDemande.setPickupLongitude(demandeLocationDetails.getPickupLongitude());
-
-        existingDemande.setStatut(demandeLocationDetails.getStatut());
-
-        long nbJours = ChronoUnit.DAYS.between(existingDemande.getDebutLocation(), existingDemande.getFinLocation());
-        if (nbJours <= 0) {
-            throw new RuntimeException("La date de fin doit être après la date de début");
-        }
-
-        double prixTotal = nbJours * existingDemande.getVehicule().getPrixParJour();
-        existingDemande.setPrixTotal(prixTotal);
-
-        return demandeLocationRepository.save(existingDemande);
-    }
 
     @Override
     public void deleteById(Long id) {
@@ -160,16 +146,20 @@ public class DemandeLocationService implements IDemandeLocationService {
     }
 
     private void calculatePrixTotal(DemandeLocation demandeLocation) {
-        long nbJours = ChronoUnit.DAYS.between(
+        // Calcul précis de la durée en jours (arrondi au jour supérieur)
+        long heuresLocation = ChronoUnit.HOURS.between(
                 demandeLocation.getDebutLocation(),
                 demandeLocation.getFinLocation());
 
-        if (nbJours <= 0) {
-            throw new IllegalArgumentException("La durée de location doit être d'au moins un jour");
-        }
+        // Toute durée < 24h compte comme 1 jour
+        long nbJours = (heuresLocation + 23) / 24;
 
-        double prixTotal = nbJours * demandeLocation.getVehicule().getPrixParJour();
+        // Calcul du prix total avec arrondi
+        double prixTotal = Math.round(nbJours *
+                demandeLocation.getVehicule().getPrixParJour() * 100) / 100.0;
+
         demandeLocation.setPrixTotal(prixTotal);
     }
+
 
 }

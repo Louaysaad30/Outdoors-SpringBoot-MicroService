@@ -28,10 +28,7 @@ public class DemandeLocationController {
     }
 
     @GetMapping("/availability")
-    public ResponseEntity<?> checkAvailability(
-            @RequestParam Long vehicleId,
-            @RequestParam String start,
-            @RequestParam String end) {
+    public ResponseEntity<?> checkAvailability( @RequestParam Long vehicleId, @RequestParam String start, @RequestParam String end) {
         try {
             LocalDateTime startDate = LocalDateTime.parse(start);
             LocalDateTime endDate = LocalDateTime.parse(end);
@@ -47,13 +44,14 @@ public class DemandeLocationController {
     @PostMapping
     public ResponseEntity<?> createReservation(@RequestBody DemandeLocation demandeLocation) {
         try {
+            System.out.println("Received DemandeLocation: " + demandeLocation);
             DemandeLocation saved = demandeLocationService.save(demandeLocation);
             return ResponseEntity.status(HttpStatus.CREATED).body(saved);
         } catch (IllegalStateException e) {
+            System.out.println("Conflict: " + e.getMessage());
             return ResponseEntity.status(HttpStatus.CONFLICT).body(e.getMessage());
-        } catch (IllegalArgumentException e) {
-            return ResponseEntity.badRequest().body(e.getMessage());
         } catch (Exception e) {
+            e.printStackTrace();
             return ResponseEntity.internalServerError().body("Error creating reservation");
         }
     }
@@ -84,16 +82,6 @@ public class DemandeLocationController {
         return demandeLocation != null ? ResponseEntity.ok(demandeLocation) : ResponseEntity.notFound().build();
     }
 
-
-    @PutMapping("/{id}")
-    public ResponseEntity<DemandeLocation> updateDemande(@PathVariable Long id, @RequestBody DemandeLocation demandeLocationDetails) {
-        try {
-            DemandeLocation updatedDemande = demandeLocationService.update(id, demandeLocationDetails);
-            return ResponseEntity.ok(updatedDemande);
-        } catch (RuntimeException ex) {
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(null);
-        }
-    }
 
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> deleteDemande(@PathVariable Long id) {
