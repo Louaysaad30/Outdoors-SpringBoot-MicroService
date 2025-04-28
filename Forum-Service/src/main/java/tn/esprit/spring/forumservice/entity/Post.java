@@ -35,11 +35,7 @@ public class Post {
     @Column(nullable = false)
     private Integer userId; // ID statique
 
-    @Transient // Ne sera pas stocké en base
-    private String username = "test_user";
 
-    @Transient
-    private String email = "test_user@example.com";
 
     @JsonIgnoreProperties("post") // This prevents the circular reference
     @OneToMany(mappedBy = "post", cascade = CascadeType.ALL, fetch = FetchType.LAZY)

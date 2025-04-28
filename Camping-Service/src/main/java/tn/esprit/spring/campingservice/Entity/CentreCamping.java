@@ -1,6 +1,7 @@
 package tn.esprit.spring.campingservice.Entity;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonManagedReference;
 import jakarta.persistence.*;
 import lombok.*;
 import lombok.experimental.FieldDefaults;
@@ -32,16 +33,18 @@ public class CentreCamping {
     float prixJr;
     boolean isVerified;
 
-    @JsonIgnore
-    @OneToMany(mappedBy = "centre", cascade = CascadeType.ALL)
+    int numTel;
+
+    @JsonManagedReference
+    @OneToMany(mappedBy = "centre", cascade = CascadeType.ALL , fetch = FetchType.EAGER)
     private List<Logement> logements;
 
-    @JsonIgnore
-    @OneToMany(mappedBy = "centre", cascade = CascadeType.ALL)
+    @JsonManagedReference
+    @OneToMany(mappedBy = "centre", cascade = CascadeType.ALL , fetch = FetchType.EAGER)
     private List<Materiel> materiels;
 
     @JsonIgnore
-    @OneToMany(mappedBy = "centre", cascade = CascadeType.ALL)
+    @OneToMany(mappedBy = "centre", cascade = CascadeType.ALL, fetch = FetchType.EAGER)
     private List<Reservation> reservations;
 
 

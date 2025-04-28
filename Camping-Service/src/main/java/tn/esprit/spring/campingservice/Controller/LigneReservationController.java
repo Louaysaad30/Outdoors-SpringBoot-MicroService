@@ -11,6 +11,7 @@ import java.util.List;
 
 @Tag(name = "LigneReservation")
 @RestController
+@CrossOrigin("*")
 @AllArgsConstructor
 @RequestMapping("/LigneReservation")
 public class LigneReservationController {
@@ -40,5 +41,17 @@ public class LigneReservationController {
     @DeleteMapping("/delete/{id}")
     public void deleteLigneReservation(@PathVariable Long id) {
         ligneReservationService.removeLigneReservation(id);
+    }
+
+    @DeleteMapping("/deleteByReservation/{reservationId}")
+    public void deleteLigneReservationsByReservationId(@PathVariable Long reservationId) {
+        ligneReservationService.removeLigneReservationsByReservationId(reservationId);
+    }
+
+    @PutMapping("/update/{idReservation}")
+    public LigneReservation updateLigneReservationByReservationId(
+            @PathVariable Long idReservation,
+            @RequestBody LigneReservation updatedLigneReservation) {
+        return ligneReservationService.updateLigneReservationByReservationId(idReservation, updatedLigneReservation);
     }
 }

@@ -5,6 +5,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.*;
 import org.springframework.security.authentication.*;
+import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.util.LinkedMultiValueMap;
@@ -14,10 +15,12 @@ import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.server.ResponseStatusException;
 import tn.esprit.spring.userservice.Entity.Token;
 import tn.esprit.spring.userservice.Entity.User;
+import tn.esprit.spring.userservice.Entity.UserDetail;
 import tn.esprit.spring.userservice.Enum.EmailTemplateName;
 import tn.esprit.spring.userservice.Enum.RoleType;
 import tn.esprit.spring.userservice.Repository.RoleRepository;
 import tn.esprit.spring.userservice.Repository.TokenRepository;
+import tn.esprit.spring.userservice.Repository.UserDetailRepository;
 import tn.esprit.spring.userservice.Repository.UserRepository;
 import tn.esprit.spring.userservice.Security.JwtService;
 import tn.esprit.spring.userservice.Service.Interface.AuthenticationService;
@@ -27,6 +30,7 @@ import tn.esprit.spring.userservice.Service.Interface.UserService;
 import tn.esprit.spring.userservice.dto.Request.AuthenticationRequest;
 import tn.esprit.spring.userservice.dto.Request.RegistrationRequest;
 import tn.esprit.spring.userservice.dto.Response.AuthenticationResponse;
+import tn.esprit.spring.userservice.dto.Response.UserDetailDTO;
 
 import java.io.IOException;
 import java.security.SecureRandom;
@@ -45,6 +49,8 @@ public class AuthentificationServiceImpl implements AuthenticationService {
     private  final UserRepository userRepository;
     private final AuthenticationManager authenticationManager;
     private final UserService userService;
+    private final UserDetailRepository userDetailRepository;
+
     private  final TokenRepository tokenRepository;
     private final EmailService emailService;
     private final JwtService jwtService;
@@ -94,6 +100,15 @@ public class AuthentificationServiceImpl implements AuthenticationService {
         }
 
         userRepository.save(user);
+        // Create and save the UserDetail entry
+        UserDetail userDetail = new UserDetail();
+        userDetail.setUser(user); // Set the user ID
+        userDetail.setSessions(0);
+        userDetail.setTotalSessions(0);
+        userDetail.setNDaysAfterOnboarding(0);
+        userDetail.setTotalNavigationsFav1(0);
+        userDetail.setActivityDays(0);
+        userDetailRepository.save(userDetail);
         sendValidationEmail(user);
     }
 

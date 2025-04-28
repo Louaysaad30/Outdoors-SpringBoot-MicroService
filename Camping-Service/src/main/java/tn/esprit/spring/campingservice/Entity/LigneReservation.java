@@ -1,5 +1,6 @@
 package tn.esprit.spring.campingservice.Entity;
 
+import com.fasterxml.jackson.annotation.JsonBackReference;
 import jakarta.persistence.*;
 import lombok.*;
 import lombok.experimental.FieldDefaults;
@@ -22,6 +23,7 @@ public class LigneReservation {
     int quantite;
     float prix;
 
+    @JsonBackReference
     @ManyToOne
     private Reservation reservation;
 

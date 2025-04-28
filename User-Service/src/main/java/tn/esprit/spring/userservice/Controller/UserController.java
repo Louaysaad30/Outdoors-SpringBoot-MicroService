@@ -15,6 +15,7 @@ import tn.esprit.spring.userservice.Service.Interface.UserService;
 import tn.esprit.spring.userservice.dto.Request.UserUpdateRequest;
 
 import java.io.IOException;
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 
@@ -99,6 +100,7 @@ public class UserController {
             throw new RuntimeException(e);
         }
     }
+
     @GetMapping("/{id}")
     public ResponseEntity<?> getUserById(@PathVariable Long id) {
         try {
@@ -108,6 +110,9 @@ public class UserController {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body("User not found with ID: " + id);
         }
     }
+
+
+
     @PutMapping("/verify/{id}")
     public ResponseEntity<?> verifyUser(@PathVariable Long id) {
         try {
@@ -155,9 +160,30 @@ public class UserController {
     public ResponseEntity<String> predictChurn(@RequestParam Long userId) {
         String result = userService.predictChurn(userId);
         return ResponseEntity.ok(result);
+
     }
-
-
+    @GetMapping("/churn-statistics")
+    public ResponseEntity<Map<String, Long>> getChurnStatistics() {
+        try {
+            Map<String, Long> churnStatistics = userService.getChurnStatistics(); // Call the service method
+            return ResponseEntity.ok(churnStatistics); // Return the statistics
+        } catch (Exception e) {
+            // Return a Map<String, Long> with default error values
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body(Map.of("error", -1L));
+        }
+    }
+    @PostMapping("/send-churn-emails")
+    public ResponseEntity<String> sendChurnEmails() {
+        try {
+            userService.sendEmailToChurnUsers(); // Call the service method
+            return ResponseEntity.ok("Emails sent successfully to churn users.");
+        } catch (Exception e) {
+            // Handle any exceptions and return an error response
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body("Failed to send emails to churn users: " + e.getMessage());
+        }
+    }
     @PutMapping("/disconnect/{id}")
     public ResponseEntity<String> disconnectUser(@PathVariable Long id) {
         User user = userService.getUserById(id);
