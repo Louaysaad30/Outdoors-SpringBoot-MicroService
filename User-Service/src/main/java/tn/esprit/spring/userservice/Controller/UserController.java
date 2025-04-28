@@ -165,4 +165,10 @@ public class UserController {
         return ResponseEntity.ok("User " + user.getNom() + " is now OFFLINE");
     }
 
+    @GetMapping("/role/livreur")
+    public ResponseEntity<List<User>> getUsersByRoleLivreur() {
+        List<User> livreurs = userService.getUsersByRoleLivreur();
+        return ResponseEntity.ok(livreurs);
+    }
+
 }

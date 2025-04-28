@@ -9,6 +9,7 @@ import tn.esprit.spring.userservice.Entity.User;
 import tn.esprit.spring.userservice.Entity.UserDetail;
 import tn.esprit.spring.userservice.Enum.EmailTemplateName;
 import tn.esprit.spring.userservice.Enum.Etat;
+import tn.esprit.spring.userservice.Enum.RoleType;
 import tn.esprit.spring.userservice.Repository.ChatMessageRepository;
 import tn.esprit.spring.userservice.Repository.TokenRepository;
 import tn.esprit.spring.userservice.Repository.UserDetailRepository;
@@ -232,6 +233,11 @@ public class UserServiceIMPL implements UserService {
     }
     public List<User> getUsersWithConversations(Long userId) {
         return chatMessageRepository.findUsersInConversationWith(userId);
+    }
+
+    @Override
+    public List<User> getUsersByRoleLivreur() {
+        return userRepository.findByRolesRoleType(RoleType.LIVREUR);
     }
 
 }

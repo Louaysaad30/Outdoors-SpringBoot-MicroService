@@ -23,6 +23,7 @@ public interface UserService {
     public void incrementNavigation(Long userId) ;
     UserDetailDTO getUserDetailDTOByUserId(Long userId);
     String predictChurn(Long userId);
+    List <User> getUsersByRoleLivreur();
 
     public List<User> getUsersWithConversations(Long userId) ;
 
