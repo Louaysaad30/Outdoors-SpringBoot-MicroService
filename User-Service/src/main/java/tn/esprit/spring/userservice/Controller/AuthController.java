@@ -7,14 +7,18 @@ import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.ErrorResponse;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.server.ResponseStatusException;
 import tn.esprit.spring.userservice.Entity.User;
 import tn.esprit.spring.userservice.Service.Interface.AuthenticationService;
 import tn.esprit.spring.userservice.dto.Request.AuthenticationRequest;
+import tn.esprit.spring.userservice.dto.Request.ChangePasswordRequest;
 import tn.esprit.spring.userservice.dto.Request.RegistrationRequest;
 import tn.esprit.spring.userservice.dto.Response.AuthenticationResponse;
+import tn.esprit.spring.userservice.handler.CustomError;
 
 import java.util.Collections;
 import java.util.Map;
@@ -27,32 +31,40 @@ public class AuthController {
     @Qualifier("authentificationServiceImpl")
     private  final AuthenticationService service;
 
-    @PostMapping("/register")
-    public ResponseEntity<?> register(@RequestBody @Valid RegistrationRequest request) throws MessagingException {
+    @PostMapping(value = "/register", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    public ResponseEntity<?> register(@ModelAttribute @Valid RegistrationRequest request) throws MessagingException {
         try {
             service.register(request);
-            return ResponseEntity.status(HttpStatus.CREATED).body(Collections.singletonMap("message", "User registered successfully"));
+            return ResponseEntity.status(HttpStatus.CREATED)
+                    .body(Collections.singletonMap("message", "User registered successfully"));
         } catch (ResponseStatusException ex) {
             return ResponseEntity.status(ex.getStatusCode())
                     .body(Map.of("status", ex.getStatusCode().value(), "message", ex.getReason()));
         }
     }
-
-
     @PostMapping("/authenticate")
     public ResponseEntity<?> authenticate(@RequestBody @Valid AuthenticationRequest request) {
         try {
+            // 1. Vérifie le token reCAPTCHA
+            boolean isValidCaptcha = service.verifyRecaptcha(request.getRecaptchaToken());
+            if (!isValidCaptcha) {
+                return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                        .body(Collections.singletonMap("error", "Invalid reCAPTCHA token"));
+            }
+
+            // 2. Si OK, continue le login
             AuthenticationResponse response = service.authenticate(request);
-            return ResponseEntity.ok(response); // Return the JWT token if authentication is successful
+            return ResponseEntity.ok(response);
+
         } catch (ResponseStatusException ex) {
-            // Handle different exception cases for more fine-grained error responses
             return ResponseEntity.status(ex.getStatusCode())
                     .body(Map.of("status", ex.getStatusCode().value(), "message", ex.getReason()));
         } catch (RuntimeException e) {
-            // For unexpected errors, you can return a generic error message
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(Collections.singletonMap("error", e.getMessage()));
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
+                    .body(Collections.singletonMap("error", e.getMessage()));
         }
     }
+
 
 
     @GetMapping("/activate-account")
@@ -95,6 +107,48 @@ public class AuthController {
         }
     }
 
+
+    @PutMapping("/change-password")
+    public ResponseEntity<?> changePassword(@RequestBody ChangePasswordRequest request) {
+        try {
+            service.changePassword(request.getUserId(), request.getOldPassword(), request.getNewPassword());
+            return ResponseEntity.ok(Collections.singletonMap("message", "Password changed successfully"));
+        } catch (ResponseStatusException ex) {
+            return ResponseEntity
+                    .status(ex.getStatusCode())
+                    .body(Collections.singletonMap("message", ex.getReason())); // ensure it's a JSON response
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body(Collections.singletonMap("message", "An unexpected error occurred"));
+        }
+    }
+    @PostMapping("/forgot-password")
+    public ResponseEntity<?> forgotPassword(@RequestBody Map<String, String> request) {
+        String email = request.get("email");
+
+        try {
+            service.sendResetLink(email);  // Call the sendResetLink method
+            return ResponseEntity.ok(Map.of("message", "Password reset link sent to your email"));
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                    .body(new CustomError(400, e.getMessage())); // Return error with code and message
+        }
+    }
+
+    @PostMapping("/reset-password")
+    public ResponseEntity<?> resetPassword(@RequestParam String token, @RequestBody Map<String, String> body) {
+        String newPassword = body.get("newPassword");
+        try {
+            service.resetPassword(token, newPassword);
+            return ResponseEntity.ok(Collections.singletonMap("message", "Password successfully reset"));
+        } catch (ResponseStatusException ex) {
+            return ResponseEntity.status(ex.getStatusCode())
+                    .body(Map.of("status", ex.getStatusCode().value(), "message", ex.getReason()));
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body(Collections.singletonMap("message", "An unexpected error occurred: " + e.getMessage()));
+        }
+    }
 
 
     @PostMapping("/logout")
