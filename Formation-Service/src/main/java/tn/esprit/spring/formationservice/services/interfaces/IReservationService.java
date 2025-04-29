@@ -16,6 +16,6 @@ public interface IReservationService {
     List<ReservationResponse> getReservationsByParticipant(Long participantId);
     List<UserReservationResponse> getUserReservations(Long userId);
     void cancelReservation(Long id);
-
+    void confirmReservation(Long id);
 
 }

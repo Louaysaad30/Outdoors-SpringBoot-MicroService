@@ -72,6 +72,13 @@ public class ReservationServiceImpl implements IReservationService {
                     .build();
         }).toList();
     }
+    @Override
+    public void confirmReservation(Long id) {
+        Reservation reservation = reservationRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Réservation introuvable"));
+        reservation.setStatut(StatutReservation.CONFIRME);
+        reservationRepository.save(reservation);
+    }
 
     @Override
     public List<ReservationResponse> getReservationsByParticipant(Long participantId) {

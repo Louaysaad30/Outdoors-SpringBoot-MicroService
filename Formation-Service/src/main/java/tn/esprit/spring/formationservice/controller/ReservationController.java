@@ -30,6 +30,11 @@ public class ReservationController {
         Reservation created = reservationService.addReservation(request, userId);
         return new ResponseEntity<>(created, HttpStatus.CREATED);
     }
+    @PutMapping("/confirm/{id}")
+    public ResponseEntity<Void> confirmReservation(@PathVariable Long id) {
+        reservationService.confirmReservation(id);
+        return ResponseEntity.ok().build();
+    }
 
     @GetMapping
     public ResponseEntity<List<ReservationResponse>> getAll() {  // 🆕 changer ici List<ReservationResponse>
