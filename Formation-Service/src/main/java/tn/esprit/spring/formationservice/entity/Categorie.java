@@ -19,6 +19,8 @@ public class Categorie {
 
     private String nom;
 
+    private String imageUrl; // Field to store the image URL
+
     @Column(length = 500)
     private String description;
 

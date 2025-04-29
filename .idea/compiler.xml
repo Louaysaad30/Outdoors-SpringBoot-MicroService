@@ -8,6 +8,9 @@
         <sourceTestOutputDir name="target/generated-test-sources/test-annotations" />
         <outputRelativeToContentRoot value="true" />
         <module name="Eureka-Server" />
+      </profile>
+      <profile name="Annotation profile for Transport-Service" enabled="true">
+
 
 
       </profile>
@@ -15,15 +18,18 @@
 
 
       <profile name="Annotation profile for MarketPlace-Service" enabled="true">
+
         <sourceOutputDir name="target/generated-sources/annotations" />
         <sourceTestOutputDir name="target/generated-test-sources/test-annotations" />
         <outputRelativeToContentRoot value="true" />
         <processorPath useClasspath="false">
           <entry name="$MAVEN_REPOSITORY$/org/projectlombok/lombok/1.18.30/lombok-1.18.30.jar" />
         </processorPath>
+
         <module name="Formation-Service" />
         <module name="MarketPlace-Service" />
         <module name="Transport-Service" />
+        <module name="Forum-Service" />
 
         <module name="Event-Service" />
         <module name="User-Service" />
@@ -58,6 +64,12 @@
         <sourceTestOutputDir name="target/generated-test-sources/test-annotations" />
         <outputRelativeToContentRoot value="true" />
         <processorPath useClasspath="false">
+        </processorPath>
+        <module name="Formation-Service" />
+        <module name="Event-Service" />
+        <module name="User-Service" />
+        <module name="Camping-Service" />
+
 
 
           <entry name="$MAVEN_REPOSITORY$/org/projectlombok/lombok/1.18.30/lombok-1.18.30.jar" />
