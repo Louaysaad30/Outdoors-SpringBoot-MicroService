@@ -36,6 +36,24 @@ public class UserServiceApplication {
 			if (roleRepository.findByRoleType(RoleType.OWNER).isEmpty()) {
 				roleRepository.save(Role.builder().roleType(RoleType.OWNER).build());
 			}
+			if (roleRepository.findByRoleType(RoleType.ADMIN).isEmpty()) {
+				roleRepository.save(Role.builder().roleType(RoleType.ADMIN).build());
+			}
+			if (roleRepository.findByRoleType(RoleType.AGENCE).isEmpty()) {
+				roleRepository.save(Role.builder().roleType(RoleType.AGENCE).build());
+			}
+			if (roleRepository.findByRoleType(RoleType.EVENT_MANAGER).isEmpty()) {
+				roleRepository.save(Role.builder().roleType(RoleType.EVENT_MANAGER).build());
+			}
+			if (roleRepository.findByRoleType(RoleType.FORMATEUR).isEmpty()) {
+				roleRepository.save(Role.builder().roleType(RoleType.FORMATEUR).build());
+			}
+			if (roleRepository.findByRoleType(RoleType.LIVREUR).isEmpty()) {
+				roleRepository.save(Role.builder().roleType(RoleType.LIVREUR).build());
+			}
+			if (roleRepository.findByRoleType(RoleType.OWNER).isEmpty()) {
+				roleRepository.save(Role.builder().roleType(RoleType.OWNER).build());
+			}
 		};
 	}
 }

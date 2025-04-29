@@ -1,5 +1,6 @@
 package tn.esprit.spring.campingservice.Entity;
 
+import com.fasterxml.jackson.annotation.JsonBackReference;
 import jakarta.persistence.*;
 import lombok.*;
 import lombok.experimental.FieldDefaults;
@@ -17,12 +18,16 @@ public class Materiel {
     Long idMateriel;
 
     String name;
+    String description;
     int quantity;
     float price;
+
+    TypeMateriel type;
 
     @Lob
     String image;
 
+    @JsonBackReference
     @ManyToOne
     private CentreCamping centre;
 }

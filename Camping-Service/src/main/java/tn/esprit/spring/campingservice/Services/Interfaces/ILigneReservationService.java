@@ -9,4 +9,6 @@ public interface ILigneReservationService {
     LigneReservation updateLigneReservation(LigneReservation ligneReservation);
     LigneReservation retrieveLigneReservation(Long idLigne);
     void removeLigneReservation(Long idLigne);
+    void   removeLigneReservationsByReservationId(Long idReservation);
+    LigneReservation updateLigneReservationByReservationId(Long idReservation, LigneReservation updatedLigneReservation);
 }

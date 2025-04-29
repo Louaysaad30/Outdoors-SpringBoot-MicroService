@@ -100,6 +100,7 @@ public class UserController {
             throw new RuntimeException(e);
         }
     }
+
     @GetMapping("/{id}")
     public ResponseEntity<?> getUserById(@PathVariable Long id) {
         try {
@@ -109,6 +110,9 @@ public class UserController {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body("User not found with ID: " + id);
         }
     }
+
+
+
     @PutMapping("/verify/{id}")
     public ResponseEntity<?> verifyUser(@PathVariable Long id) {
         try {
@@ -185,6 +189,12 @@ public class UserController {
         User user = userService.getUserById(id);
         userService.disconnect(user);
         return ResponseEntity.ok("User " + user.getNom() + " is now OFFLINE");
+    }
+
+    @GetMapping("/role/livreur")
+    public ResponseEntity<List<User>> getUsersByRoleLivreur() {
+        List<User> livreurs = userService.getUsersByRoleLivreur();
+        return ResponseEntity.ok(livreurs);
     }
 
 }
