@@ -19,4 +19,5 @@ public class FormationRequest {
     private boolean pauseSponsorRequired;
     private Long sponsorId;
     private String meetLink;
+
 }

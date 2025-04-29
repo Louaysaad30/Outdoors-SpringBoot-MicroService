@@ -2,7 +2,6 @@ package tn.esprit.spring.formationservice.dto;
 
 import lombok.Builder;
 import lombok.Data;
-
 import java.time.LocalDateTime;
 
 @Data
@@ -27,5 +26,6 @@ public class FormationResponseDTO {
     private Integer dureePauseMinutes;
     private Boolean besoinSponsor;
     private Long categorieId;
+    private String categorieNom; // ✅ ici ajouté
     private Long sponsorId;
 }

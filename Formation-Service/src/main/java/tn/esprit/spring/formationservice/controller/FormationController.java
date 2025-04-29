@@ -85,6 +85,7 @@ public class FormationController {
                     .dureePauseMinutes(f.getDureePauseMinutes())
                     .besoinSponsor(f.getBesoinSponsor())
                     .categorieId(f.getCategorie() != null ? f.getCategorie().getId() : null)
+                    .categorieNom(f.getCategorie() != null ? f.getCategorie().getNom() : null) // ✅ ajoute cette ligne
                     .sponsorId(f.getSponsor() != null ? f.getSponsor().getId() : null)
                     .build();
         }).toList();
