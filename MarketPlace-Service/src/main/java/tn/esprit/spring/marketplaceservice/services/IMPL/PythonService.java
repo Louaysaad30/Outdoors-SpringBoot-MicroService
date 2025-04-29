@@ -4,6 +4,7 @@ import org.springframework.http.*;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
 
+import java.util.List;
 import java.util.Map;
 
 @Service
@@ -32,19 +33,27 @@ public class PythonService {
         HttpHeaders headers = new HttpHeaders();
         headers.setContentType(MediaType.APPLICATION_JSON);
 
-        Map<String, String> payload = Map.of("review_text", text);  // Assurez-vous que le payload utilise la bonne clé
-        HttpEntity<Map<String, String>> requestEntity = new HttpEntity<>(payload, headers);
+        Map<String, Object> payload = Map.of(
+                "review_text", List.of(text),
+                "date_de_naissance", List.of("2000-01-01"),  // Mettre une date fictive ou null
+                "idReview", List.of(1)  // Mettre un ID fictif
+        );
+
+        HttpEntity<Map<String, Object>> requestEntity = new HttpEntity<>(payload, headers);
 
         try {
-            ResponseEntity<Map> response = restTemplate.exchange(url, HttpMethod.POST, requestEntity, Map.class);
-            Map<String, Object> responseBody = response.getBody();
-
-            // Récupérer la valeur du sentiment à partir de la clé "sentiment_label"
-            return (String) responseBody.get("sentiment_label");  // Utilisez "sentiment_label" au lieu de "sentiment"
+            ResponseEntity<List> response = restTemplate.exchange(url, HttpMethod.POST, requestEntity, List.class);
+            List<Map<String, Object>> results = response.getBody();
+            if (results != null && !results.isEmpty()) {
+                return (String) results.get(0).get("sentiment_label");
+            }
         } catch (Exception e) {
-            return "unknown";
+            e.printStackTrace();
         }
+
+        return "unknown";
     }
+
 
 
 }
