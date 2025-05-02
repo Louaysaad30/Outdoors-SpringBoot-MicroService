@@ -125,10 +125,6 @@ mvn spring-boot:run
 # Repeat for each service
 ```
 
-5. **Optional: Run with Docker**
-```bash
-docker-compose up
-```
 
 ## 📚 API Documentation
 
