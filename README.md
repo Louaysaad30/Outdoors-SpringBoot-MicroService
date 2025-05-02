@@ -7,14 +7,13 @@ A robust and scalable microservices-based backend system powering the Outdoor Ad
 ![Microservices Architecture](https://via.placeholder.com/800x400?text=Outdoor+Adventures+Microservices+Architecture)
 
 ## 📋 Table of Contents
-- System Architecture
-- Microservices Overview
-- Technologies Used
-- Features
-- Installation and Setup
-- API Documentation
-- Contributing
-- License
+- [🏗 System Architecture](#-system-architecture)
+- [🧩 Microservices Overview](#-microservices-overview)
+- [💻 Technologies Used](#-technologies-used)
+- [✨ Core Features](#-core-features)
+- [🛠 Installation and Setup](#-installation-and-setup)
+- [📚 API Documentation](#-api-documentation)
+- [📄 License](#-license)
 
 ## 🏗 System Architecture
 
@@ -125,7 +124,6 @@ mvn spring-boot:run
 # Repeat for each service
 ```
 
-
 ## 📚 API Documentation
 
 Swagger documentation available at:
@@ -136,7 +134,6 @@ Swagger documentation available at:
 - **MarketPlace Service**: http://localhost:9091/swagger-ui.html
 - **Transport Service**: http://localhost:9093/swagger-ui.html
 - **User Service**: http://localhost:9098/swagger-ui.html
-
 
 ## 📄 License
 
