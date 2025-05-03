@@ -1,6 +1,8 @@
 package tn.esprit.spring.marketplaceservice.entity;
 
+import com.fasterxml.jackson.annotation.JsonIdentityInfo;
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.ObjectIdGenerators;
 import jakarta.persistence.*;
 import lombok.*;
 import lombok.experimental.FieldDefaults;
@@ -41,6 +43,9 @@ public class Produit {
 
     @OneToMany(mappedBy = "produit", cascade = CascadeType.ALL, orphanRemoval = true)
     List<ProductImage> imageGallery = new ArrayList<>();
+
+    @OneToMany(mappedBy = "product", cascade = CascadeType.ALL)
+    List<Review> Reviews;
 
 
 

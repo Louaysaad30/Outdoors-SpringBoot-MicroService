@@ -81,5 +81,10 @@ public class ProduitServiceIMPL implements IProduitService {
         return produitRepository.findByCodeProduitIdCodeProduit(code);
     }
 
+    @Override
+    public Produit getProduitsById(Long idProduit) {
+        return produitRepository.findByIdProduit(idProduit);
+    }
+
 
 }

@@ -5,10 +5,13 @@ import tn.esprit.spring.formationservice.entity.Sponsor;
 
 import java.io.IOException;
 import java.util.List;
+import java.util.Optional;
 
 public interface ISponsorService {
     Sponsor addSponsor(Sponsor sponsor, MultipartFile logo) throws IOException;
     List<Sponsor> getAllSponsors();
     void deleteSponsor(Long id);
     Sponsor updateSponsor(Long id, Sponsor sponsor, MultipartFile logo) throws IOException;
+    Optional<Sponsor> suggestBestSponsor(String formationDescription);
+
 }

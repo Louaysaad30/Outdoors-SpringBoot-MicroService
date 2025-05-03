@@ -21,8 +21,20 @@ public class UserServiceApplication {
 	@Bean
 	public CommandLineRunner runner(RoleRepository roleRepository) {
 		return args -> {
-			if (roleRepository.findByRoleType(RoleType.USER).isEmpty()) {
-				roleRepository.save(Role.builder().roleType(RoleType.USER).build());
+			if (roleRepository.findByRoleType(RoleType.ADMIN).isEmpty()) {
+				roleRepository.save(Role.builder().roleType(RoleType.ADMIN).build());
+			}
+			if (roleRepository.findByRoleType(RoleType.AGENCE).isEmpty()) {
+				roleRepository.save(Role.builder().roleType(RoleType.AGENCE).build());
+			}
+			if (roleRepository.findByRoleType(RoleType.EVENT_MANAGER).isEmpty()) {
+				roleRepository.save(Role.builder().roleType(RoleType.EVENT_MANAGER).build());
+			}
+			if (roleRepository.findByRoleType(RoleType.FORMATEUR).isEmpty()) {
+				roleRepository.save(Role.builder().roleType(RoleType.FORMATEUR).build());
+			}
+			if (roleRepository.findByRoleType(RoleType.OWNER).isEmpty()) {
+				roleRepository.save(Role.builder().roleType(RoleType.OWNER).build());
 			}
 			if (roleRepository.findByRoleType(RoleType.ADMIN).isEmpty()) {
 				roleRepository.save(Role.builder().roleType(RoleType.ADMIN).build());

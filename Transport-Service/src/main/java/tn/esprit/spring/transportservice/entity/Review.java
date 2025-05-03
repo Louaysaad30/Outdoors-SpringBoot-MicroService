@@ -22,6 +22,9 @@ public class Review {
 
     private String comment;
 
+    @Column(name = "user_id")
+    private Long userId;
+
     private LocalDateTime createdDate = LocalDateTime.now();
 
     @ManyToOne
