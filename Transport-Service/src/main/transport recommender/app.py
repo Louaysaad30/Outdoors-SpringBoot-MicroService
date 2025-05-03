@@ -13,7 +13,6 @@ def recommend():
         data = request.get_json()
         mood_input = data.get("mood_input", "")
         vehicle_data = data.get("vehicules", [])
-
         # Ensure all vehicles have required fields
         for v in vehicle_data:
             v['prixParJour'] = v.get('prixParJour', 0)  # Default to 0 if missing

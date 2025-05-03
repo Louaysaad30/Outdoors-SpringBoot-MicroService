@@ -31,6 +31,7 @@ public class DemandeLocationService implements IDemandeLocationService {
     }
 
     public List<DemandeLocation> getDemandesByUserId(Long userId) {
+        System.out.println("Fetching demandes for user ID: " + userId);
         return demandeLocationRepository.findByUserId(userId);
     }
 
