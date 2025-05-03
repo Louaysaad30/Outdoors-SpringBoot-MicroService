@@ -103,8 +103,7 @@ The platform consists of the following independently deployed services:
 
 1. **Clone the project**
 ```bash
-git clone https://github.com/yourusername/outdoor-adventures-backend.git
-cd outdoor-adventures-backend
+git clone https://github.com/Louaysaad30/Outdoors-SpringBoot-MicroService.git
 ```
 
 2. **Prepare MySQL databases**
