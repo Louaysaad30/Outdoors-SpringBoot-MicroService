@@ -3,6 +3,7 @@ package tn.esprit.spring.transportservice.controllers;
 import com.cloudinary.Cloudinary;
 import com.cloudinary.utils.ObjectUtils;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.core.ParameterizedTypeReference;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
@@ -19,7 +20,12 @@ import tn.esprit.spring.transportservice.services.interfaces.IVehiculeService;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
+//recommender imports
+import org.springframework.web.reactive.function.client.WebClient;
+import tn.esprit.spring.transportservice.dto.RecommendationRequest;
+import tn.esprit.spring.transportservice.dto.VehiculeDTO;
 
 @RestController
 @RequestMapping("/api/vehicules")
@@ -30,7 +36,8 @@ public class VehiculeController {
 
     private final IVehiculeService vehiculeService;
 
-
+    @Autowired  // Add this annotation
+    private WebClient webClient;
     @Autowired
     private AgenceRepository agenceRepository;
 
@@ -43,6 +50,58 @@ public class VehiculeController {
     public VehiculeController(IVehiculeService vehiculeService) {
         this.vehiculeService = vehiculeService;
     }
+
+    // ============ Recommendation Endpoint ============
+    @PostMapping(value = "/recommend", consumes = MediaType.APPLICATION_JSON_VALUE)
+    public ResponseEntity<?> recommendVehicules(@RequestBody RecommendationRequest request) {
+        try {
+            List<VehiculeDTO> vehiculeDTOs = request.getVehicules() != null ?
+                    request.getVehicules() :
+                    vehiculeService.findAll().stream()
+                            .map(this::convertToDTO)
+                            .collect(Collectors.toList());
+
+            // Set default values
+            vehiculeDTOs.forEach(dto -> {
+                if (dto.getPrixParJour() == null) dto.setPrixParJour(100.0);
+                if (dto.getRating() == null) dto.setRating(3.0);
+            });
+
+            Map<String, Object> requestBody = Map.of(
+                    "mood_input", request.getMood_input(),
+                    "vehicules", vehiculeDTOs
+            );
+
+            // Correct WebClient implementation
+            List<VehiculeDTO> recommendations = webClient.post()
+                    .uri("http://localhost:5006/recommend")
+                    .contentType(MediaType.APPLICATION_JSON)
+                    .bodyValue(requestBody)
+                    .retrieve()
+                    .bodyToMono(new ParameterizedTypeReference<List<VehiculeDTO>>() {})
+                    .block();
+
+            return ResponseEntity.ok(recommendations);
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body(Map.of(
+                            "error", "Recommendation failed",
+                            "message", e.getMessage()
+                    ));
+        }
+    }
+
+    private VehiculeDTO convertToDTO(Vehicule vehicule) {
+        VehiculeDTO dto = new VehiculeDTO();
+        dto.setType(vehicule.getType());
+        dto.setModele(vehicule.getModele());
+        dto.setLocalisation(vehicule.getLocalisation());
+        dto.setDescription(vehicule.getDescription());
+        dto.setPrixParJour(vehicule.getPrixParJour());
+        dto.setRating(vehicule.getRating());
+        return dto;
+    }
+
     // 👇 New endpoint to generate a Vehicule JSON object using Groq
     @PostMapping("/generate")
     public ResponseEntity<String> generateVehiculeFromGroq(@RequestBody Map<String, String> attributes) {

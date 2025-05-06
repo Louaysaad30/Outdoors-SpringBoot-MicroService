@@ -1,14 +1,16 @@
 package tn.esprit.spring.marketplaceservice.services.IMPL;
 
 
+import jakarta.transaction.Transactional;
 import lombok.AllArgsConstructor;
 import org.springframework.stereotype.Service;
-import tn.esprit.spring.marketplaceservice.entity.Commande;
-import tn.esprit.spring.marketplaceservice.entity.LigneCommande;
-import tn.esprit.spring.marketplaceservice.entity.Panier;
-import tn.esprit.spring.marketplaceservice.entity.Status;
+import tn.esprit.spring.marketplaceservice.DTO.UpdateIdlivreurDTO;
+import tn.esprit.spring.marketplaceservice.DTO.UpdateQuantiteDTO;
+import tn.esprit.spring.marketplaceservice.DTO.UpdateStateCommand;
+import tn.esprit.spring.marketplaceservice.entity.*;
 import tn.esprit.spring.marketplaceservice.repository.CommandeRepository;
 import tn.esprit.spring.marketplaceservice.repository.LigneCommandeRepository;
+import tn.esprit.spring.marketplaceservice.repository.LivraisonRepository;
 import tn.esprit.spring.marketplaceservice.repository.PanierRepository;
 import tn.esprit.spring.marketplaceservice.services.interfaces.ICommandeService;
 
@@ -23,6 +25,7 @@ public class CommandeServiceIMPL implements ICommandeService {
 
     CommandeRepository commandeRepository;
     LigneCommandeRepository ligneCommandeRepository;
+    LivraisonRepository livraisonRepository;
     @Override
     public List<Commande> retrieveCommandes() {
         return commandeRepository.findAll();
@@ -75,6 +78,34 @@ public class CommandeServiceIMPL implements ICommandeService {
         return commande.getLigneCommande().stream()
                 .map(ligneCommande -> ligneCommande.getProduit().getNomProduit())
                 .collect(Collectors.toList());
+    }
+    @Override
+    @Transactional
+    public Commande updateCommandeStatus(Long commandeId,  UpdateStateCommand dto) {
+        Commande commande = commandeRepository.findById(commandeId)
+                .orElseThrow(() -> new RuntimeException("Commande not found with id: " + commandeId));
+        commande.setEtat(dto.getEtat());
+        return commandeRepository.save(commande);
+    }
+
+    @Override
+    public List<Commande> findByUserId(Long userId) {
+        return commandeRepository.findByUserId(userId);
+    }
+
+    @Override
+    public Commande affecterLivreurACommande(Long commandeId, Long livraisonId) {
+        Commande commande = commandeRepository.findById(commandeId)
+                .orElseThrow(() -> new RuntimeException("Commande not found with id: " + commandeId));
+        Livraison livraison = livraisonRepository.findById(livraisonId)
+                .orElseThrow(() -> new RuntimeException("Livraison not found with id: " + livraisonId));
+        commande.setLivraison(livraison);
+        return commandeRepository.save(commande);
+    }
+
+    @Override
+    public List<Commande> findByLivraisonIdLivraison(Long idLivraison) {
+        return commandeRepository.findByLivraisonIdLivraison(idLivraison);
     }
 
 

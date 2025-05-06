@@ -19,34 +19,40 @@ public class SponsorController {
     private final ISponsorService sponsorService;
 
     @PostMapping("/add")
-    public ResponseEntity<Sponsor> addSponsor(@RequestPart("sponsor") Sponsor sponsor, @RequestPart("logo") MultipartFile logo) {
+    public ResponseEntity<?> addSponsor(@RequestPart("sponsor") Sponsor sponsor, @RequestPart("logo") MultipartFile logo) {
         try {
             Sponsor savedSponsor = sponsorService.addSponsor(sponsor, logo);
             return new ResponseEntity<>(savedSponsor, HttpStatus.CREATED);
+        } catch (IllegalArgumentException e) {
+            return new ResponseEntity<>(e.getMessage(), HttpStatus.CONFLICT); // Duplicate name/email
         } catch (IOException e) {
-            return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
+            return new ResponseEntity<>("Logo upload failed", HttpStatus.BAD_REQUEST);
         }
     }
 
     @GetMapping
     public ResponseEntity<List<Sponsor>> getAllSponsors() {
-        List<Sponsor> sponsors = sponsorService.getAllSponsors();
-        return new ResponseEntity<>(sponsors, HttpStatus.OK);
+        return ResponseEntity.ok(sponsorService.getAllSponsors());
     }
 
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> deleteSponsor(@PathVariable Long id) {
         sponsorService.deleteSponsor(id);
-        return new ResponseEntity<>(HttpStatus.NO_CONTENT);
+        return ResponseEntity.noContent().build();
     }
 
     @PutMapping("/update/{id}")
-    public ResponseEntity<Sponsor> updateSponsor(@PathVariable Long id, @RequestPart("sponsor") Sponsor sponsor, @RequestPart("logo") MultipartFile logo) {
+    public ResponseEntity<?> updateSponsor(@PathVariable Long id,
+                                           @RequestPart("sponsor") Sponsor sponsor,
+                                           @RequestPart(name = "logo", required = false) MultipartFile logo) {
         try {
             Sponsor updatedSponsor = sponsorService.updateSponsor(id, sponsor, logo);
-            return new ResponseEntity<>(updatedSponsor, HttpStatus.OK);
+            return ResponseEntity.ok(updatedSponsor);
+        } catch (IllegalArgumentException e) {
+            return ResponseEntity.status(HttpStatus.CONFLICT).body(e.getMessage());
         } catch (IOException e) {
-            return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Logo update failed");
         }
     }
+
 }

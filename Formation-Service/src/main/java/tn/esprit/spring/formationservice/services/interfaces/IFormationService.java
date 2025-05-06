@@ -3,9 +3,11 @@ package tn.esprit.spring.formationservice.services.interfaces;
 import org.springframework.web.multipart.MultipartFile;
 import tn.esprit.spring.formationservice.dto.FormationRequest;
 import tn.esprit.spring.formationservice.entity.Formation;
+import tn.esprit.spring.formationservice.entity.Sponsor;
 
 import java.io.IOException;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 
 public interface IFormationService {
@@ -14,4 +16,9 @@ public interface IFormationService {
     Optional<Formation> getFormationById(Long id);
     void deleteFormation(Long id);
     Formation updateFormation(Formation formation);
+    Optional<Sponsor> suggestSponsorForFormation(String description);
+    String generateBetterDescription(String rawDescription);
+    Map<String, Object> getFormateurData(Long formateurId);
+    List<Formation> getFormationsByFormateurId(Long formateurId);
+
 }
