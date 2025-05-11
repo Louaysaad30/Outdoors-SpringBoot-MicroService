@@ -16,7 +16,7 @@ import java.util.Map;
 
 @RestController
 @RequestMapping("/statistics")
-@CrossOrigin(origins = "http://localhost:4200")
+@CrossOrigin(origins = "*")
 @RequiredArgsConstructor
 public class StatisticsController {
 

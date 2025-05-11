@@ -7,7 +7,7 @@ import tn.esprit.spring.campingservice.dto.UserDto;
 
 import java.util.List;
 
-@FeignClient(name = "USER-SERVICE", url = "${user-service.url:http://localhost:9096}")
+@FeignClient(name = "USER-SERVICE", url = "${user-service.url:http://mysql:9096}")
 public interface IUserService {
 
     @GetMapping("/user/{id}")

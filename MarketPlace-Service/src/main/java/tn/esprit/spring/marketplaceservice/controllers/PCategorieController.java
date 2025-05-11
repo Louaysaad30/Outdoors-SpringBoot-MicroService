@@ -14,7 +14,7 @@ import java.util.List;
 @Tag(name = "Gestion PCategorie")
 @RestController
 @AllArgsConstructor
-@CrossOrigin(origins = "http://localhost:4200")
+@CrossOrigin(origins = "*")
 @RequestMapping("/PCategorie")
 public class PCategorieController {
     private final IPCategorieService ipCategorieService;

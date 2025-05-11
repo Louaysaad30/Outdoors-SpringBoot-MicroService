@@ -25,7 +25,7 @@ import java.util.Map;
 @RestController
 @AllArgsConstructor
 @RequestMapping("/Review")
-@CrossOrigin(origins = "http://localhost:4200")
+@CrossOrigin(origins = "*")
 public class ReviewController {
 
     // Injection des services nécessaires
