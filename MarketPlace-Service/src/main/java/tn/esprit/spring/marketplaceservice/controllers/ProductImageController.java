@@ -16,7 +16,7 @@ import java.util.List;
 @Tag(name = "GestionImage")
 @RestController
 @AllArgsConstructor
-@CrossOrigin(origins = "http://localhost:4200")
+@CrossOrigin(origins = "*")
 @RequestMapping("/ProductImage")
 public class ProductImageController {
     private final IProductImageService productImageService;

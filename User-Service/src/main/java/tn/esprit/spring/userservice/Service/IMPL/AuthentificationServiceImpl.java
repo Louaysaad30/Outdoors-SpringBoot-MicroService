@@ -292,6 +292,9 @@ public class AuthentificationServiceImpl implements AuthenticationService {
         String secret = "6LewnB4rAAAAAESdvbw1XNwOfsVHeuJmZl2lye5W"; // récupérée depuis l'admin Google reCAPTCHA
         String url = "https://www.google.com/recaptcha/api/siteverify";
 
+        if (token == null || token.isEmpty()) {
+            return false;
+}
         try {
             RestTemplate restTemplate = new RestTemplate();
             MultiValueMap<String, String> params = new LinkedMultiValueMap<>();

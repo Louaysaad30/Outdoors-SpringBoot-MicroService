@@ -34,7 +34,7 @@ import java.util.*;
 @RestController
 @RequestMapping("/post")
 @RequiredArgsConstructor
-@CrossOrigin(origins = "http://localhost:4200")
+@CrossOrigin(origins = "*")
 public class PostController {
 
     private final PostService postService;
